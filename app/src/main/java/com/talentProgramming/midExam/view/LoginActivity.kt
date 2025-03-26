@@ -20,7 +20,16 @@ class LoginActivity : AppCompatActivity() {
         binding.apply {
             setContentView(root)
             btLogin.setOnClickListener{
-
+                val etUsername = etUsername.text.toString()
+                if(userDB.checkUsernameExist(etUsername)){
+                    showToast("Login Successfully")
+                    val intent = Intent(this@LoginActivity, HomeActivity::class.java)
+                    intent.putExtra("username", etUsername)
+                    startActivity(intent)
+                }
+                else{
+                    showToast("Login Failed!!!")
+                }
             }
             btRegister.setOnClickListener{
                 startActivity(Intent(this@LoginActivity, RegisterActivity::class.java))

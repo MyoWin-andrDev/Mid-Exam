@@ -25,13 +25,14 @@ class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) 
         val cv = ContentValues()
         cv.put("username", userName)
         cv.put("password", password)
-        try {
-            db.insert(TBL_USER, null, cv)
-            db.close()
-            return true
+         return try {
+            db.insertOrThrow(TBL_USER, null, cv)
+            true
         }catch (e : Exception){
+            false
+        }
+        finally {
             db.close()
-            return false
         }
     }
 
@@ -78,6 +79,15 @@ class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) 
         }catch(_ : Exception) {
             db.close()
         }
+    }
+
+    fun checkUsernameExist(username : String) : Boolean {
+        val db = this.readableDatabase
+        val cursor = db.rawQuery("SELECT * FROM $TBL_USER WHERE username = ?", arrayOf(username))
+        val exists = cursor.count > 0
+        cursor.close()
+        db.close()
+        return exists
     }
     fun getCurrentUsername(userId: Int): String? {
         val db = this.readableDatabase
