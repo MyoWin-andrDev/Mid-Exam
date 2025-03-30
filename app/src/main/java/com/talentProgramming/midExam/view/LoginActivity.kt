@@ -3,6 +3,7 @@ package com.talentProgramming.midExam.view
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.talentProgramming.midExam.database.UserDB
@@ -23,8 +24,10 @@ class LoginActivity : AppCompatActivity() {
                 val etUsername = etUsername.text.toString()
                 if(userDB.checkUsernameExist(etUsername)){
                     showToast("Login Successfully")
+                    val userId = userDB.getUserId(etUsername)
                     val intent = Intent(this@LoginActivity, HomeActivity::class.java)
                     intent.putExtra("username", etUsername)
+                    intent.putExtra("userId", userId)
                     startActivity(intent)
                 }
                 else{

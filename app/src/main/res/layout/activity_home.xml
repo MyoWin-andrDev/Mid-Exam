@@ -51,7 +51,7 @@
         android:layout_width="32dp"
         android:layout_height="32dp"
         app:layout_constraintStart_toStartOf="@id/ilStatus"
-        app:layout_constraintTop_toTopOf="@id/btSignUp"
+        app:layout_constraintTop_toTopOf="@id/btUpload"
         android:src="@drawable/ic_camera"
         android:visibility="gone"/>
 
@@ -60,7 +60,7 @@
         android:layout_width="32dp"
         android:layout_height="32dp"
         app:layout_constraintStart_toEndOf="@id/ivCamera"
-        app:layout_constraintTop_toTopOf="@id/btSignUp"
+        app:layout_constraintTop_toTopOf="@id/btUpload"
         android:src="@drawable/ic_image"
         android:layout_marginStart="16dp"
         android:visibility="gone"/>
@@ -83,7 +83,7 @@
         android:layout_marginTop="8dp"/>
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/btSignUp"
+        android:id="@+id/btUpload"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         style="@style/Widget.MaterialComponents.Button"

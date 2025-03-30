@@ -25,7 +25,7 @@ class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) 
         sqliteDatabase?.execSQL("DROP TABLE IF EXISTS $TBL_STATUS")
         onCreate(sqliteDatabase)
     }
-
+    //TBL_USER Functions
     fun insertUser(userName : String, password : String) : Boolean {
         val db = this@UserDB.writableDatabase
         val cv = ContentValues()
@@ -87,6 +87,21 @@ class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) 
         }
     }
 
+    fun getUserId(username: String) : Int {
+        val db = this.readableDatabase
+        val cursor = db.rawQuery("SELECT * FROM $TBL_USER WHERE username = ?", arrayOf(username))
+        var userId = 0
+        if(cursor.moveToFirst()){
+            while (!cursor.isAfterLast){
+                userId = cursor.getInt(cursor.getColumnIndexOrThrow("user_id"))
+                cursor.moveToNext()
+            }
+        }
+        cursor.close()
+        db.close()
+        return userId
+    }
+
     fun checkUsernameExist(username : String) : Boolean {
         val db = this.readableDatabase
         val cursor = db.rawQuery("SELECT * FROM $TBL_USER WHERE username = ?", arrayOf(username))
@@ -109,7 +124,24 @@ class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) 
         cursor.close()
         db.close()
         return password
+    }
+    //TBL_STATUS Functions
 
+    fun insertStatus(userId : Int,status : String) : Boolean {
+        val db = this.writableDatabase
+        val cv = ContentValues()
+        cv.put("user_id", userId)
+        cv.put("status", status)
+        return try {
+            db.insert(TBL_STATUS , null, cv)
+            true
+        }
+        catch (e : Exception){
+            false
+        }
+        finally {
+            db.close()
+        }
     }
 
     fun getUserUploadStatus(username : String) : List<StatusModel>{
