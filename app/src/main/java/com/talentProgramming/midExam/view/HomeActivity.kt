@@ -1,5 +1,6 @@
 package com.talentProgramming.midExam.view
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -11,13 +12,14 @@ import com.talentProgramming.midExam.utilities.showToast
 
 class HomeActivity : AppCompatActivity() {
     private lateinit var binding: ActivityHomeBinding
+    @SuppressLint("UseSupportActionBar")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
-            val username = intent.getStringExtra("username")
-            Log.d("userName", username.toString())
-            showToast("Hello $username !!!")
+//            val username = intent.getStringExtra("username")
+//            Log.d("userName", username.toString())
+//            showToast("Hello $username !!!")
+        setActionBar(binding.tbHome)
     }
 }
