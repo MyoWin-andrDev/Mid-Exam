@@ -7,17 +7,23 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.os.Build
 import androidx.annotation.RequiresApi
+import com.talentProgramming.midExam.model.StatusModel
 import com.talentProgramming.midExam.model.UserModel
 
 @RequiresApi(Build.VERSION_CODES.P)
 class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) {
     val TBL_USER= "tbl_user"
+    val TBL_STATUS = "tbl_status"
+
     override fun onCreate(sqLiteDatabase: SQLiteDatabase?) {
-        sqLiteDatabase?.execSQL("""CREATE TABLE $TBL_USER (user_id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT , status TEXT)""")
+        sqLiteDatabase?.execSQL("""CREATE TABLE $TBL_USER (user_id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT)""")
+        sqLiteDatabase?.execSQL("CREATE TABLE $TBL_STATUS (status_id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, status TEXT NOT NULL, uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (user_id) REFERENCES $TBL_USER(user_id) ON DELETE CASCADE)")
     }
 
-    override fun onUpgrade(p0: SQLiteDatabase?, p1: Int, p2: Int) {
-        TODO("Not yet implemented")
+    override fun onUpgrade(sqliteDatabase: SQLiteDatabase?, p1: Int, p2: Int) {
+        sqliteDatabase?.execSQL("DROP TABLE IF EXISTS $TBL_USER")
+        sqliteDatabase?.execSQL("DROP TABLE IF EXISTS $TBL_STATUS")
+        onCreate(sqliteDatabase)
     }
 
     fun insertUser(userName : String, password : String) : Boolean {
@@ -57,10 +63,10 @@ class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) 
         return userList
     }
 
-    fun updateGenre(userId : Int ,genreName : String) : Boolean{
+    fun updateUser(userId : Int ,username : String) : Boolean{
         val db = this@UserDB.writableDatabase
         val cv = ContentValues()
-        cv.put("g_name", genreName)
+        cv.put("username", username)
         try {
             db.update(TBL_USER, cv, "user_id = $userId", null)
             db.close()
@@ -71,10 +77,10 @@ class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) 
         }
     }
 
-    fun deleteGenre(genreId : Int){
+    fun deleteUser(userId : Int){
         val db = this@UserDB.writableDatabase
         try {
-            db.delete(TBL_USER, "g_id = $genreId", null)
+            db.delete(TBL_USER, "g_id = $userId", null)
             db.close()
         }catch(_ : Exception) {
             db.close()
@@ -89,17 +95,41 @@ class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) 
         db.close()
         return exists
     }
-    fun getCurrentUsername(userId: Int): String? {
+
+    fun checkPassword(username : String) : String{
         val db = this.readableDatabase
-        val cursor = db.rawQuery("SELECT username FROM $TBL_USER WHERE user_id = ?", null)
-        var username: String? = null
-        cursor.use {
-            if (it.moveToFirst()) {
-                username = it.getString(it.getColumnIndexOrThrow("username"))
+        val cursor = db.rawQuery("SELECT password FROM $TBL_USER WHERE username = $username", null)
+        var password : String = ""
+        if(cursor.moveToFirst()){
+            while(!cursor.isAfterLast){
+                password = cursor.getString(cursor.getColumnIndexOrThrow("password"))
+                cursor.moveToNext()
             }
         }
+        cursor.close()
         db.close()
-        return username
+        return password
+
+    }
+
+    fun getUserUploadStatus(username : String) : List<StatusModel>{
+        val db = this.readableDatabase
+        val statusList = arrayListOf<StatusModel>()
+        val cursor = db.rawQuery("SELECT us.status, us.uploaded_at FROM upload_status us JOIN users u ON us.user_id = u.id WHERE u.username = $username", null)
+        if(cursor.moveToFirst()){
+            while (!cursor.isAfterLast){
+                statusList.add(StatusModel(
+                    cursor.getInt(cursor.getColumnIndexOrThrow("status_id")),
+                    cursor.getInt(cursor.getColumnIndexOrThrow("user_id")),
+                    cursor.getString(cursor.getColumnIndexOrThrow("status")),
+                    cursor.getString(cursor.getColumnIndexOrThrow("uploaded_at"))
+                ))
+                cursor.moveToNext()
+            }
+        }
+        cursor.close()
+        db.close()
+        return statusList
     }
 
 }
