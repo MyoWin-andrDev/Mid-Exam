@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import com.talentProgramming.midExam.R
@@ -20,6 +22,18 @@ class HomeActivity : AppCompatActivity() {
 //            val username = intent.getStringExtra("username")
 //            Log.d("userName", username.toString())
 //            showToast("Hello $username !!!")
-        setActionBar(binding.tbHome)
+        setSupportActionBar(binding.tbHome)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_item, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId){
+            R.id.logout -> showToast("Successfully Logged Out !")
+        }
+        return super.onOptionsItemSelected(item)
     }
 }
