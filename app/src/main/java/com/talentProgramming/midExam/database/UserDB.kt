@@ -17,7 +17,7 @@ class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) 
 
     override fun onCreate(sqLiteDatabase: SQLiteDatabase?) {
         sqLiteDatabase?.execSQL("""CREATE TABLE $TBL_USER (user_id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT)""")
-        sqLiteDatabase?.execSQL("CREATE TABLE $TBL_STATUS (status_id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, status TEXT NOT NULL, uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (user_id) REFERENCES $TBL_USER(user_id) ON DELETE CASCADE)")
+        sqLiteDatabase?.execSQL("CREATE TABLE $TBL_STATUS (status_id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, username TEXT NOT NULL ,status TEXT NOT NULL, uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (user_id) REFERENCES $TBL_USER(user_id) ON DELETE CASCADE)")
     }
 
     override fun onUpgrade(sqliteDatabase: SQLiteDatabase?, p1: Int, p2: Int) {
@@ -127,10 +127,11 @@ class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) 
     }
     //TBL_STATUS Functions
 
-    fun insertStatus(userId : Int,status : String) : Boolean {
+    fun insertStatus(userId : Int, username : String ,status : String) : Boolean {
         val db = this.writableDatabase
         val cv = ContentValues()
         cv.put("user_id", userId)
+        cv.put("username", username)
         cv.put("status", status)
         return try {
             db.insert(TBL_STATUS , null, cv)
@@ -147,12 +148,13 @@ class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) 
     fun getUserUploadStatus(username : String) : List<StatusModel>{
         val db = this.readableDatabase
         val statusList = arrayListOf<StatusModel>()
-        val cursor = db.rawQuery("SELECT us.status, us.uploaded_at FROM upload_status us JOIN users u ON us.user_id = u.id WHERE u.username = $username", null)
+        val cursor = db.rawQuery("SELECT * FROM $TBL_STATUS us JOIN $TBL_USER u ON us.user_id = u.user_id WHERE u.username = ?", arrayOf(username))
         if(cursor.moveToFirst()){
             while (!cursor.isAfterLast){
                 statusList.add(StatusModel(
                     cursor.getInt(cursor.getColumnIndexOrThrow("status_id")),
                     cursor.getInt(cursor.getColumnIndexOrThrow("user_id")),
+                    cursor.getString(cursor.getColumnIndexOrThrow("username")),
                     cursor.getString(cursor.getColumnIndexOrThrow("status")),
                     cursor.getString(cursor.getColumnIndexOrThrow("uploaded_at"))
                 ))
