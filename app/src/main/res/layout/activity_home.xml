@@ -18,7 +18,7 @@
         android:background="?attr/colorPrimary"
         app:title="Upload Status"
         app:titleTextColor="?attr/colorOnPrimary"
-        app:menu="@menu/menu_item"/>
+        app:menu="@menu/menu_item_home"/>
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/ilStatus"

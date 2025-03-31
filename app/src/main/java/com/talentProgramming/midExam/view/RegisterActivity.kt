@@ -27,7 +27,7 @@ class RegisterActivity : AppCompatActivity() {
             startActivity(Intent(this@RegisterActivity, LoginActivity::class.java))
         }
         btSignUp.setOnClickListener{
-            if(!etUsername.text.toString().equals("") && etPassword.text.toString() == etRePassword.text.toString()){
+            if(etUsername.text.toString() != "" && etPassword.text.toString() == etRePassword.text.toString()){
                 if(userDB.insertUser(etUsername.text.toString(),etPassword.text.toString())) {
                     showToast("Successfully Registered")
                     startActivity(Intent(this@RegisterActivity, LoginActivity::class.java))

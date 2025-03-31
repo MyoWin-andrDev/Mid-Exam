@@ -6,7 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.talentProgramming.midExam.databinding.ListViewStatusBinding
 import com.talentProgramming.midExam.model.StatusModel
 
-class StatusAdapter(val statusList : List<StatusModel>) : RecyclerView.Adapter<StatusAdapter.StatusViewHolder>() {
+class StatusAdapter(private val statusList : List<StatusModel>) : RecyclerView.Adapter<StatusAdapter.StatusViewHolder>() {
 
     class StatusViewHolder(val binding : ListViewStatusBinding) : RecyclerView.ViewHolder(binding.root){}
 
