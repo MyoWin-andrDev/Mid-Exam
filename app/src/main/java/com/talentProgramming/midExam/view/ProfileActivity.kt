@@ -20,6 +20,7 @@ class ProfileActivity : AppCompatActivity() {
         binding.apply {
             setContentView(root)
             setSupportActionBar(tbProfile)
+            tbProfile.setNavigationOnClickListener { finish() }
         }
     }
 

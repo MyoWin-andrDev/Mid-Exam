@@ -1,6 +1,7 @@
 package com.talentProgramming.midExam.view
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.Menu
@@ -12,6 +13,7 @@ import com.talentProgramming.midExam.adapter.StatusAdapter
 import com.talentProgramming.midExam.database.UserDB
 import com.talentProgramming.midExam.databinding.ActivityHomeBinding
 import com.talentProgramming.midExam.model.StatusModel
+import com.talentProgramming.midExam.utilities.showAlertDialog
 import com.talentProgramming.midExam.utilities.showToast
 
 class HomeActivity : AppCompatActivity() {
@@ -49,11 +51,18 @@ class HomeActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when(item.itemId){
-            R.id.logout -> showToast("Successfully Logged Out !")
+            R.id.profile -> Intent(this@HomeActivity, ProfileActivity::class.java).apply { startActivity(this) }
+            R.id.logout -> showAlertDialog(
+                title = "Log out",
+                message = "Are you sure you want to log out?",
+                positiveButtonText = "YES",
+                negativeButtonText = "NO",
+                onPositiveClick = { finish() }
+            )
         }
         return super.onOptionsItemSelected(item)
     }
     private fun refreshAdapter(statusList: List<StatusModel>){
-        binding.rvStatus.adapter = StatusAdapter(statusList)
+        binding.rvStatus.adapter = StatusAdapter(this@HomeActivity, statusList)
     }
 }

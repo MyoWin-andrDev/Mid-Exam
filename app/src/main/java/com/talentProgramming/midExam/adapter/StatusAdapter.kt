@@ -1,12 +1,14 @@
 package com.talentProgramming.midExam.adapter
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.talentProgramming.midExam.databinding.ListViewStatusBinding
 import com.talentProgramming.midExam.model.StatusModel
+import com.talentProgramming.midExam.utilities.showPopUpMenu
 
-class StatusAdapter(private val statusList : List<StatusModel>) : RecyclerView.Adapter<StatusAdapter.StatusViewHolder>() {
+class StatusAdapter(val context : Context, private val statusList : List<StatusModel>) : RecyclerView.Adapter<StatusAdapter.StatusViewHolder>() {
 
     class StatusViewHolder(val binding : ListViewStatusBinding) : RecyclerView.ViewHolder(binding.root){}
 
@@ -19,6 +21,9 @@ class StatusAdapter(private val statusList : List<StatusModel>) : RecyclerView.A
         holder.binding.apply {
             tvUsername.text = statusList[position].username
             tvStatus.text = statusList[position].status
+            ivMore.setOnClickListener {
+                context.showPopUpMenu(ivMore)
+            }
         }
     }
 }

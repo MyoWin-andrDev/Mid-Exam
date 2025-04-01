@@ -15,7 +15,9 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:background="?attr/colorPrimary"
+        app:menu="@menu/menu_item_profile"
         app:title="Profile"
+        app:navigationIcon="@drawable/ic_back"
         app:titleTextColor="?attr/colorOnPrimary"/>
 <!--    Edit Username-->
     <TextView
