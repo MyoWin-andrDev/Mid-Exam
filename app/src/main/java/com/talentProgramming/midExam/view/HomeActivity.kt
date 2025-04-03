@@ -2,6 +2,7 @@ package com.talentProgramming.midExam.view
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
 import android.view.Menu
@@ -19,6 +20,7 @@ import com.talentProgramming.midExam.utilities.showToast
 class HomeActivity : AppCompatActivity() {
     private lateinit var binding: ActivityHomeBinding
     private lateinit var statusDB : UserDB
+    private lateinit var sharedPreferences: SharedPreferences
     @RequiresApi(Build.VERSION_CODES.P)
     @SuppressLint("UseSupportActionBar")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,7 +29,7 @@ class HomeActivity : AppCompatActivity() {
         binding.apply {
             setContentView(root)
             setSupportActionBar(tbHome)
-
+            sharedPreferences = getSharedPreferences("MY_PREF", MODE_PRIVATE)
             //Value from Login Activity
             val username = intent.getStringExtra("username")
             val userId = intent.getIntExtra("userId", 0)
@@ -52,17 +54,24 @@ class HomeActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when(item.itemId){
             R.id.profile -> Intent(this@HomeActivity, ProfileActivity::class.java).apply { startActivity(this) }
-            R.id.logout -> showAlertDialog(
-                title = "Log out",
-                message = "Are you sure you want to log out?",
-                positiveButtonText = "YES",
-                negativeButtonText = "NO",
-                onPositiveClick = { finish() }
-            )
+            R.id.logout -> {
+                showAlertDialog(
+                    title = "Log out",
+                    message = "Are you sure you want to log out?",
+                    positiveButtonText = "YES",
+                    negativeButtonText = "NO",
+                    onPositiveClick = { finish() }
+                )
+                //Edit PREF
+                sharedPreferences.edit().apply {
+                    putBoolean("isUserLoggedIn", false).apply()
+                }
+            }
         }
         return super.onOptionsItemSelected(item)
     }
     private fun refreshAdapter(statusList: List<StatusModel>){
         binding.rvStatus.adapter = StatusAdapter(this@HomeActivity, statusList)
     }
+
 }

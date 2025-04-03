@@ -3,11 +3,7 @@ package com.talentProgramming.midExam.view
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import com.talentProgramming.midExam.R
 import com.talentProgramming.midExam.databinding.ActivitySplashBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -23,8 +19,15 @@ class SplashActivity : AppCompatActivity() {
         setContentView(binding.root)
         sharedPreferences = getSharedPreferences("MY_PREF", MODE_PRIVATE )
         CoroutineScope(Dispatchers.Main).launch {
-            delay(1)
-            startActivity(Intent(this@SplashActivity, LoginActivity::class.java))
+            val isUserLoggedIn = sharedPreferences.getBoolean("isUserLoggedIn", false)
+            delay(3000)
+            if(!isUserLoggedIn){
+                startActivity(Intent(this@SplashActivity, LoginActivity::class.java))
+            }
+            else {
+                startActivity(Intent(this@SplashActivity, HomeActivity::class.java))
+            }
+            finish()
         }
     }
 }
