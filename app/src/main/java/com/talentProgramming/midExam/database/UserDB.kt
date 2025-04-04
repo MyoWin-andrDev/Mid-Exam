@@ -14,6 +14,7 @@ import com.talentProgramming.midExam.model.UserModel
 class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) {
     val TBL_USER= "tbl_user"
     val TBL_STATUS = "tbl_status"
+    private lateinit var db : SQLiteDatabase
 
     override fun onCreate(sqLiteDatabase: SQLiteDatabase?) {
         sqLiteDatabase?.execSQL("""CREATE TABLE $TBL_USER (user_id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT)""")
@@ -27,7 +28,7 @@ class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) 
     }
     //TBL_USER Functions
     fun insertUser(userName : String, password : String) : Boolean {
-        val db = this@UserDB.writableDatabase
+        db = this@UserDB.writableDatabase
         val cv = ContentValues()
         cv.put("username", userName)
         cv.put("password", password)
@@ -45,7 +46,7 @@ class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) 
     @SuppressLint("Range")
     fun getAllUser() : List<UserModel>{
         val userList = ArrayList<UserModel>()
-        val db = this@UserDB.readableDatabase
+        db = this@UserDB.readableDatabase
         val cursor = db.rawQuery("SELECT * FROM $TBL_USER",null)
         if(cursor.moveToFirst()){
             while (!cursor.isAfterLast){
@@ -64,7 +65,7 @@ class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) 
     }
 
     fun updateUser(userId : Int ,username : String) : Boolean{
-        val db = this@UserDB.writableDatabase
+        db = this@UserDB.writableDatabase
         val cv = ContentValues()
         cv.put("username", username)
         try {
@@ -78,7 +79,7 @@ class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) 
     }
 
     fun deleteUser(userId : Int){
-        val db = this@UserDB.writableDatabase
+        db = this@UserDB.writableDatabase
         try {
             db.delete(TBL_USER, "g_id = $userId", null)
             db.close()
@@ -88,7 +89,7 @@ class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) 
     }
 
     fun getUserId(username: String) : Int {
-        val db = this.readableDatabase
+        db = this.readableDatabase
         val cursor = db.rawQuery("SELECT * FROM $TBL_USER WHERE username = ?", arrayOf(username))
         var userId = 0
         if(cursor.moveToFirst()){
@@ -103,7 +104,7 @@ class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) 
     }
 
     fun checkUsernameExist(username : String) : Boolean {
-        val db = this.readableDatabase
+        db = this.readableDatabase
         val cursor = db.rawQuery("SELECT * FROM $TBL_USER WHERE username = ?", arrayOf(username))
         val exists = cursor.count > 0
         cursor.close()
@@ -112,7 +113,7 @@ class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) 
     }
 
     fun checkPassword(username : String) : String{
-        val db = this.readableDatabase
+        db = this.readableDatabase
         val cursor = db.rawQuery("SELECT password FROM $TBL_USER WHERE username = $username", null)
         var password : String = ""
         if(cursor.moveToFirst()){
@@ -128,7 +129,7 @@ class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) 
     //TBL_STATUS Functions
 
     fun insertStatus(userId : Int, username : String ,status : String) : Boolean {
-        val db = this.writableDatabase
+        db = this.writableDatabase
         val cv = ContentValues()
         cv.put("user_id", userId)
         cv.put("username", username)
@@ -146,7 +147,7 @@ class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) 
     }
 
     fun getUserUploadStatus(username : String) : List<StatusModel>{
-        val db = this.readableDatabase
+        db = this.readableDatabase
         val statusList = arrayListOf<StatusModel>()
         val cursor = db.rawQuery("SELECT * FROM $TBL_STATUS us JOIN $TBL_USER u ON us.user_id = u.user_id WHERE u.username = ?", arrayOf(username))
         if(cursor.moveToFirst()){
@@ -166,4 +167,26 @@ class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) 
         return statusList
     }
 
+    fun deleteStatus(id : Int) : Boolean {
+        db = this@UserDB.writableDatabase
+        return try{
+            db.delete(TBL_STATUS, "WHERE id = $id" , null)
+            true
+        }
+        catch( _ : Exception){
+            false
+        }
+        finally {
+            db.close()
+        }
+    }
+
+    fun updateStatus(updateStatus : String , ) : Boolean {
+        db = this@UserDB.writableDatabase
+        val cv = ContentValues()
+        cv.put("status", updateStatus)
+        try{
+            db.update(TBL_STATUS, cv, )
+        }
+    }
 }
