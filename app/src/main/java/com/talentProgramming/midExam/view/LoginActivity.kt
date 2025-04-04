@@ -34,7 +34,9 @@ class LoginActivity : AppCompatActivity() {
                     startActivity(intent)
                     //Edit PREF
                     sharedPreferences.edit().apply {
-                        this.putBoolean("isUserLoggedIn", true).apply()
+                        putBoolean("isUserLoggedIn", true)
+                        putString("usernameLoggedIn" , etUsername)
+                        apply()
                     }
                     finish()
                 }

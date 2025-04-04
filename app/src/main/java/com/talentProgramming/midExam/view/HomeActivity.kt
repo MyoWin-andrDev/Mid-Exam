@@ -31,9 +31,9 @@ class HomeActivity : AppCompatActivity() {
             setSupportActionBar(tbHome)
             sharedPreferences = getSharedPreferences("MY_PREF", MODE_PRIVATE)
             //Value from Login Activity
-            val username = intent.getStringExtra("username")
-            val userId = intent.getIntExtra("userId", 0)
-            val statusList = UserDB(this@HomeActivity).getUserUploadStatus(username!!)
+            val username = sharedPreferences.getString("usernameLoggedIn" , null)
+            val userId = UserDB(this@HomeActivity).getUserId(username!!)
+            val statusList = UserDB(this@HomeActivity).getUserUploadStatus(username)
             showToast("Welcome $username !!!")
             statusDB  = UserDB(this@HomeActivity)
             refreshAdapter(statusList)
@@ -63,9 +63,13 @@ class HomeActivity : AppCompatActivity() {
                     onPositiveClick = { finish() }
                 )
                 //Edit PREF
-                sharedPreferences.edit().apply {
-                    putBoolean("isUserLoggedIn", false).apply()
+                val editor = sharedPreferences.edit()
+                editor.putBoolean("isUserLoggedIn", false)
+                editor.apply()
+                Intent(this@HomeActivity, LoginActivity::class.java).apply {
+                    startActivity(this)
                 }
+                finish()
             }
         }
         return super.onOptionsItemSelected(item)
