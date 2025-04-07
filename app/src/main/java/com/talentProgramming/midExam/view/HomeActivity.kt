@@ -33,15 +33,14 @@ class HomeActivity : AppCompatActivity() {
             //Value from Login Activity
             val username = sharedPreferences.getString("usernameLoggedIn" , null)
             val userId = UserDB(this@HomeActivity).getUserId(username!!)
-            val statusList = UserDB(this@HomeActivity).getUserUploadStatus(username)
             showToast("Welcome $username !!!")
             statusDB  = UserDB(this@HomeActivity)
-            refreshAdapter(statusList)
+            refreshAdapter(UserDB(this@HomeActivity).getUserUploadStatus(username))
             //BtnUpload
             btUpload.setOnClickListener{
                 statusDB.insertStatus(userId, username, etStatus.text.toString())
                 showToast("Successfully Uploaded")
-                refreshAdapter(statusList)
+                refreshAdapter(UserDB(this@HomeActivity).getUserUploadStatus(username))
             }
         }
     }
