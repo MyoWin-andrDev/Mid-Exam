@@ -181,12 +181,19 @@ class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) 
         }
     }
 
-    fun updateStatus(updateStatus : String , ) : Boolean {
+    fun updateStatus(updateStatus : String , id : Int) : Boolean {
         db = this@UserDB.writableDatabase
         val cv = ContentValues()
         cv.put("status", updateStatus)
-        try{
-            db.update(TBL_STATUS, cv, )
+        return try{
+            db.update(TBL_STATUS, cv, "where id = $id", null)
+            true
+        }
+        catch (_ : Exception){
+            false
+        }
+        finally {
+            db.close()
         }
     }
 }

@@ -133,4 +133,46 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btSave"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/Widget.MaterialComponents.Button"
+        android:text="Save Changes"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ilRePassword"
+        android:layout_marginStart="40dp"
+        android:layout_marginEnd="40dp"
+        android:layout_marginTop="32dp"
+        app:cornerRadius="8dp"
+        android:padding="8dp"/>
+
+    <com.google.android.material.divider.MaterialDivider
+        android:id="@+id/divider"
+        android:layout_width="0dp"
+        android:layout_height="2dp"
+        app:layout_constraintStart_toStartOf="@id/btSave"
+        app:layout_constraintEnd_toEndOf="@id/btSave"
+        app:layout_constraintTop_toBottomOf="@id/btSave"
+        app:layout_constraintBottom_toTopOf="@id/btDelete"
+        android:layout_marginTop="16dp"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btDelete"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/Widget.MaterialComponents.Button"
+        android:backgroundTint="?attr/colorErrorContainer"
+        android:text="Delete Account"
+        android:textColor="?attr/colorError"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/divider"
+        android:layout_marginStart="40dp"
+        android:layout_marginEnd="40dp"
+        android:layout_marginTop="16dp"
+        app:cornerRadius="8dp"
+        android:padding="8dp"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

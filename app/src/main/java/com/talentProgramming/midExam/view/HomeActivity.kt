@@ -40,7 +40,7 @@ class HomeActivity : AppCompatActivity() {
             //BtnUpload
             btUpload.setOnClickListener{
                 statusDB.insertStatus(userId, username, etStatus.text.toString())
-                showToast("Successfully Inserted")
+                showToast("Successfully Uploaded")
                 refreshAdapter(statusList)
             }
         }
@@ -60,16 +60,17 @@ class HomeActivity : AppCompatActivity() {
                     message = "Are you sure you want to log out?",
                     positiveButtonText = "YES",
                     negativeButtonText = "NO",
-                    onPositiveClick = { finish() }
+                    onPositiveClick = {
+                        //Edit PREF
+                        val editor = sharedPreferences.edit()
+                        editor.putBoolean("isUserLoggedIn", false)
+                        editor.apply()
+                        Intent(this@HomeActivity, LoginActivity::class.java).apply {
+                            startActivity(this)
+                        }
+                        finish()
+                    }
                 )
-                //Edit PREF
-                val editor = sharedPreferences.edit()
-                editor.putBoolean("isUserLoggedIn", false)
-                editor.apply()
-                Intent(this@HomeActivity, LoginActivity::class.java).apply {
-                    startActivity(this)
-                }
-                finish()
             }
         }
         return super.onOptionsItemSelected(item)
