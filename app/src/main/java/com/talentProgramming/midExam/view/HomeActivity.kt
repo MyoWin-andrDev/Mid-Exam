@@ -21,6 +21,8 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var binding: ActivityHomeBinding
     private lateinit var statusDB : UserDB
     private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var username : String
+
     @RequiresApi(Build.VERSION_CODES.P)
     @SuppressLint("UseSupportActionBar")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,8 +33,8 @@ class HomeActivity : AppCompatActivity() {
             setSupportActionBar(tbHome)
             sharedPreferences = getSharedPreferences("MY_PREF", MODE_PRIVATE)
             //Value from Login Activity
-            val username = sharedPreferences.getString("usernameLoggedIn" , null)
-            val userId = UserDB(this@HomeActivity).getUserId(username!!)
+            username = sharedPreferences.getString("usernameLoggedIn" , null)!!
+            val userId = UserDB(this@HomeActivity).getUserId(username)
             showToast("Welcome $username !!!")
             statusDB  = UserDB(this@HomeActivity)
             refreshAdapter(UserDB(this@HomeActivity).getUserUploadStatus(username))
@@ -75,7 +77,7 @@ class HomeActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
     private fun refreshAdapter(statusList: List<StatusModel>){
-        binding.rvStatus.adapter = StatusAdapter(this@HomeActivity, statusList)
+        binding.rvStatus.adapter = StatusAdapter(this@HomeActivity, username , statusList)
     }
 
 }

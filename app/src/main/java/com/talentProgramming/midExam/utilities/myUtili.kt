@@ -2,11 +2,16 @@ package com.talentProgramming.midExam.utilities
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.SharedPreferences
+import android.os.Build
 import android.view.LayoutInflater
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity.MODE_PRIVATE
 import androidx.core.content.ContextCompat
 import com.talentProgramming.midExam.R
+import com.talentProgramming.midExam.database.UserDB
 import com.talentProgramming.midExam.databinding.DialogEditBinding
 //Toast Function
 fun Context.showToast(value : String){
@@ -42,27 +47,31 @@ fun Context.showAlertDialog(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.P)
 @SuppressLint("InflateParams")
-fun Context.showEditDialog(context : Context , oldStatus : String){
+fun Context.showEditDialog(context : Context , username : String , oldStatus : String){
+    val userDb = UserDB(context)
     val binding = DialogEditBinding.inflate(LayoutInflater.from(context))
     val builder = AlertDialog.Builder(context)
-    builder
+    val dialog = builder
         .setView(binding.root)
         .setCancelable(true)
-        .show()
-        .also { dialog ->
-            binding.apply {
-                etStatus.setText(oldStatus)
-                btUpdate.setOnClickListener {
-                    context.showToast(etStatus.text.toString())
-                    dialog.dismiss()
-                }
-
-                btCancel.setOnClickListener {
-                    dialog.dismiss()
-                }
+        .create()
+    dialog.show()
+    binding.apply {
+        etStatus.setText(oldStatus)
+        //Update Btn
+        btUpdate.setOnClickListener {
+            if(userDb.updateStatus(etStatus.text.toString(), userDb.getUserId(username))){
+                context.showToast(etStatus.text.toString())
+                dialog.dismiss()
             }
         }
+        //Cancel Btn
+        btCancel.setOnClickListener {
+            dialog.dismiss()
+        }
+    }
 }
 
 

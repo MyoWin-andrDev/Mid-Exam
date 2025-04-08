@@ -170,7 +170,7 @@ class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) 
     fun deleteStatus(id : Int) : Boolean {
         db = this@UserDB.writableDatabase
         return try{
-            db.delete(TBL_STATUS, "WHERE id = $id" , null)
+            db.delete(TBL_STATUS, "status_id = ?" , arrayOf(id.toString()))
             true
         }
         catch( _ : Exception){
@@ -186,7 +186,7 @@ class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) 
         val cv = ContentValues()
         cv.put("status", updateStatus)
         return try{
-            db.update(TBL_STATUS, cv, "where id = $id", null)
+            db.update(TBL_STATUS, cv, "user_id = ?", arrayOf(id.toString()))
             true
         }
         catch (_ : Exception){
