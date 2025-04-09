@@ -15,7 +15,7 @@ import com.talentProgramming.midExam.model.StatusModel
 import com.talentProgramming.midExam.utilities.showAlertDialog
 import com.talentProgramming.midExam.utilities.showEditDialog
 import com.talentProgramming.midExam.utilities.showToast
-
+@SuppressLint("NotifyDataSetChanged")
 class StatusAdapter(private val context : Context, private val username : String, private var statusList : List<StatusModel>) : RecyclerView.Adapter<StatusAdapter.StatusViewHolder>() {
     class StatusViewHolder(val binding : ListViewStatusBinding) : RecyclerView.ViewHolder(binding.root){}
 
@@ -24,7 +24,7 @@ class StatusAdapter(private val context : Context, private val username : String
 
     override fun getItemCount(): Int = statusList.size
 
-    @SuppressLint("NotifyDataSetChanged")
+
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onBindViewHolder(holder: StatusViewHolder, position: Int) {
         holder.binding.apply {
@@ -38,7 +38,16 @@ class StatusAdapter(private val context : Context, private val username : String
                     show()
                     setOnMenuItemClickListener{ item ->
                         when(item.itemId){
-                            R.id.ic_edit -> context.showEditDialog(context,  username , statusList[position].status)
+                            //Btn Edit
+                            R.id.ic_edit -> {
+                                context.showEditDialog(
+                                    context,
+                                    username,
+                                    statusList[position].status
+                                )
+                                updateStatusList(userDb.getUserUploadStatus(username))
+                            }
+                            //Btn Delete
                             R.id.ic_delete -> context.showAlertDialog(
                                 "Delete Status?",
                                 "Are you sure want to delete this status?",
@@ -47,8 +56,7 @@ class StatusAdapter(private val context : Context, private val username : String
                                 null,
                                 onPositiveClick = {
                                     if(userDb.deleteStatus(statusList[position].status_id)){
-                                        statusList = userDb.getUserUploadStatus(usernamet)
-                                        notifyDataSetChanged()
+                                        updateStatusList(userDb.getUserUploadStatus(username))
                                         context.showToast("Delete Status Successfully")
                                     }
                                 }
@@ -59,5 +67,9 @@ class StatusAdapter(private val context : Context, private val username : String
                 }
             }
         }
+    }
+    private fun updateStatusList(newList : List<StatusModel>){
+        statusList = newList
+        notifyDataSetChanged()
     }
 }
