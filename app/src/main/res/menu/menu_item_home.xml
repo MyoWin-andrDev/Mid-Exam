@@ -6,8 +6,7 @@
         android:id="@+id/profile"
         android:title="Account"
         app:showAsAction="always"
-        android:icon="@drawable/user"
-        android:iconTint="@color/md_theme_onPrimary"/>
+        android:icon="@drawable/user_profile"/>
 
     <item
         android:id="@+id/logout"

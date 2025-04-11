@@ -22,7 +22,6 @@ import com.talentProgramming.midExam.utilities.customStringBuilder
 import com.talentProgramming.midExam.utilities.showToast
 
 class RegisterActivity : AppCompatActivity() {
-    private val PASSWORD_VALID_PATTERN = Regex("^[A-Z][A-Za-z0-9!@#$%^&*._]{5,19}$")
     private lateinit var binding : ActivityRegisterBinding
     private lateinit var userDB : UserDB
     private var checkUsername = false
@@ -52,6 +51,7 @@ class RegisterActivity : AppCompatActivity() {
                         showToast("Your account has been successfully created.")
                         Intent(this@RegisterActivity, LoginActivity::class.java).apply {
                             startActivity(this)
+                            finish()
                         }
                     }
                 }

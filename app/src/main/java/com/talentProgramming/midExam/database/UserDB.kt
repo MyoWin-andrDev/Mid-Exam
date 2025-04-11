@@ -43,27 +43,6 @@ class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) 
         }
     }
 
-    @SuppressLint("Range")
-    fun getAllUser() : List<UserModel>{
-        val userList = ArrayList<UserModel>()
-        db = this@UserDB.readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM $TBL_USER",null)
-        if(cursor.moveToFirst()){
-            while (!cursor.isAfterLast){
-                userList.add(UserModel(
-                    cursor.getInt(cursor.getColumnIndex("user_id")),
-                    cursor.getString(cursor.getColumnIndex("username")),
-                    cursor.getString(cursor.getColumnIndex("password")),
-                    cursor.getString(cursor.getColumnIndex("status"))
-                    ))
-                cursor.moveToNext()
-            }
-        }
-        cursor.close()
-        db.close()
-        return userList
-    }
-
     fun updateUser(userId : Int ,username : String) : Boolean{
         db = this@UserDB.writableDatabase
         val cv = ContentValues()
@@ -78,12 +57,32 @@ class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) 
         }
     }
 
-    fun deleteUser(userId : Int){
+    fun updatePassword(id : Int, password : String) : Boolean{
         db = this@UserDB.writableDatabase
-        try {
-            db.delete(TBL_USER, "g_id = $userId", null)
+        val cv = ContentValues()
+        cv.put("password", password)
+        return try {
+            db.update(TBL_USER, cv, "user_id = ?", arrayOf(id.toString()))
+            true
+        }
+        catch (_ : Exception){
+            false
+        }
+        finally {
             db.close()
-        }catch(_ : Exception) {
+        }
+    }
+
+    fun deleteUser(userId : Int) : Boolean{
+        db = this@UserDB.writableDatabase
+        return try {
+            db.delete(TBL_USER, "user_id = ?", arrayOf(userId.toString()))
+            true
+        }
+        catch(_ : Exception) {
+            false
+        }
+        finally {
             db.close()
         }
     }

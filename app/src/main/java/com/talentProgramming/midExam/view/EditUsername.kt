@@ -41,11 +41,7 @@ class EditUsername : AppCompatActivity() {
                                             putString("usernameLoggedIn", etUsername.text.toString())
                                             apply()
                                         }
-                                        Intent(this@EditUsername, HomeActivity::class.java).apply {
-                                            startActivity(this)
-                                            finish()
-                                        }
-
+                                        finish()
                                     }
                                     else{
                                         showToast("Something went wrong.")

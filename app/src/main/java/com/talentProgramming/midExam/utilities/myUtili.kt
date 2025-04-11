@@ -11,6 +11,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import com.google.android.material.textfield.TextInputLayout
+import com.shashank.sony.fancytoastlib.FancyToast
 import com.talentProgramming.midExam.R
 import com.talentProgramming.midExam.database.UserDB
 import com.talentProgramming.midExam.databinding.ActivityLoginBinding
@@ -18,7 +19,7 @@ import com.talentProgramming.midExam.databinding.ActivityRegisterBinding
 import com.talentProgramming.midExam.databinding.DialogEditAccountBinding
 //Toast Function
 fun Context.showToast(value : String){
-    Toast.makeText(this, value, Toast.LENGTH_LONG).show()
+    FancyToast.makeText(this, value ,FancyToast.LENGTH_LONG,FancyToast.SUCCESS,true).show()
 }
 
 //Dialog Function
@@ -93,7 +94,7 @@ fun customStringBuilder(errorList : List<String>) : StringBuilder{
 //Username Text Input Validation Check
 @RequiresApi(Build.VERSION_CODES.P)
 fun TextInputLayout.checkUsername(context: Context,username : String, oldUsername : String? = null) : Boolean {
-    val USERNAME_VALID_PATTERN = Regex("[A-Z][A-Za-z]*[0-9._]+$")
+    val USERNAME_VALID_PATTERN = Regex("[A-Z][A-Za-z]*[0-9._]*")
     val userDb = UserDB(context)
     var isUsernameChecked = false
     this.apply {

@@ -28,10 +28,13 @@ class LoginActivity : AppCompatActivity() {
                 if(userDB.checkUsernameExist(etUsername)){
                     showToast("Login Successfully")
                     val userId = userDB.getUserId(etUsername)
-                    val intent = Intent(this@LoginActivity, HomeActivity::class.java)
-                    intent.putExtra("username", etUsername)
-                    intent.putExtra("userId", userId)
-                    startActivity(intent)
+                    Intent(this@LoginActivity, HomeActivity::class.java).also {
+                        it.putExtra("username", etUsername)
+                        it.putExtra("userId", userId)
+                        startActivity(it)
+                        finish()
+                    }
+
                     //Edit PREF
                     sharedPreferences.edit().apply {
                         putBoolean("isUserLoggedIn", true)

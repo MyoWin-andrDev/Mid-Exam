@@ -37,15 +37,21 @@ class HomeActivity : AppCompatActivity() {
             val userId = UserDB(this@HomeActivity).getUserId(username)
             showToast("Welcome $username !!!")
             statusDB  = UserDB(this@HomeActivity)
-            refreshAdapter(UserDB(this@HomeActivity).getUserUploadStatus(username))
+            refreshAdapter(statusDB.getUserUploadStatus(username))
             //BtnUpload
             btUpload.setOnClickListener{
                 statusDB.insertStatus(userId, username, etStatus.text.toString())
                 etStatus.setText("")
                 showToast("Successfully Uploaded")
-                refreshAdapter(UserDB(this@HomeActivity).getUserUploadStatus(username))
+                refreshAdapter(statusDB.getUserUploadStatus(username))
             }
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.P)
+    override fun onResume() {
+        super.onResume()
+        refreshAdapter(statusDB.getUserUploadStatus(username))
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
