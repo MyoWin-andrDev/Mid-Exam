@@ -69,7 +69,7 @@ class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) 
         val cv = ContentValues()
         cv.put("username", username)
         try {
-            db.update(TBL_USER, cv, "user_id = $userId", null)
+            db.update(TBL_USER, cv, "user_id = ?", arrayOf(userId.toString()))
             db.close()
             return true
         }catch (e : Exception){
@@ -114,7 +114,7 @@ class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) 
 
     fun checkPassword(username : String) : String{
         db = this.readableDatabase
-        val cursor = db.rawQuery("SELECT password FROM $TBL_USER WHERE username = $username", null)
+        val cursor = db.rawQuery("SELECT password FROM $TBL_USER WHERE username = ?", arrayOf(username))
         var password : String = ""
         if(cursor.moveToFirst()){
             while(!cursor.isAfterLast){

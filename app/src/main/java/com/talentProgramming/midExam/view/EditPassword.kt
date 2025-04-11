@@ -25,9 +25,9 @@ class EditPassword : AppCompatActivity() {
                 setNavigationOnClickListener { finish() }
                 setOnMenuItemClickListener { item ->
                     when (item.itemId) {
-                        R.id.ic_save -> confirmPassword(
-                            onSaveClick = { showToast("Password Changed Successfully") }
-                        )
+//                        R.id.ic_save -> confirmPassword(
+//                            onSaveClick = { showToast("Password Changed Successfully") }
+//                        )
                     }
                     true
                 }

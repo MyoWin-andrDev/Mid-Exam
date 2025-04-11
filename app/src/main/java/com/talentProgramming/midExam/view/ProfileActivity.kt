@@ -41,7 +41,7 @@ class ProfileActivity : AppCompatActivity() {
                     "Cancel",
                     null,
                     onPositiveClick = {
-                        confirmPassword { showToast("Account Deleted Successfully") }
+//                        confirmPassword { showToast("Account Deleted Successfully") }
                     }
                 )
             }

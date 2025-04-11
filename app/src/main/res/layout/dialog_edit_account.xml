@@ -26,7 +26,10 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:textColorHint="@color/md_theme_secondary"
         app:passwordToggleEnabled="true"
-        android:layout_margin="24dp">
+        android:layout_margin="24dp"
+        app:errorEnabled="true"
+        app:helperTextEnabled="true"
+        app:helperTextTextColor="?attr/colorPrimary">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etPassword"
