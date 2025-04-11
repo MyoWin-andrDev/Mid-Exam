@@ -6,14 +6,15 @@ import android.os.Build
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.PopupMenu
 import androidx.recyclerview.widget.RecyclerView
 import com.talentProgramming.midExam.R
 import com.talentProgramming.midExam.database.UserDB
+import com.talentProgramming.midExam.databinding.DialogEditStatusBinding
 import com.talentProgramming.midExam.databinding.ListViewStatusBinding
 import com.talentProgramming.midExam.model.StatusModel
 import com.talentProgramming.midExam.utilities.showAlertDialog
-import com.talentProgramming.midExam.utilities.showEditDialog
 import com.talentProgramming.midExam.utilities.showToast
 @SuppressLint("NotifyDataSetChanged")
 class StatusAdapter(private val context : Context, private val username : String, private var statusList : List<StatusModel>) : RecyclerView.Adapter<StatusAdapter.StatusViewHolder>() {
@@ -40,12 +41,29 @@ class StatusAdapter(private val context : Context, private val username : String
                         when(item.itemId){
                             //Btn Edit
                             R.id.ic_edit -> {
-                                context.showEditDialog(
-                                    context,
-                                    username,
-                                    statusList[position].status
-                                )
-                                updateStatusList(userDb.getUserUploadStatus(username))
+                                val dialogBinding = DialogEditStatusBinding.inflate(LayoutInflater.from(context))
+                                val builder = AlertDialog.Builder(context)
+                                val dialog = builder
+                                    .setView(dialogBinding.root)
+                                    .setCancelable(true)
+                                    .create()
+                                dialog.show()
+                                dialogBinding.apply {
+                                    etStatus.setText(statusList[position].status)
+                                    //Update Btn
+                                    btUpdate.setOnClickListener {
+                                        if(userDb.updateStatus(etStatus.text.toString(), statusList[position].status_id)){
+                                            updateStatusList(userDb.getUserUploadStatus(username))
+                                            context.showToast("Update Status Successfully")
+                                            dialog.dismiss()
+                                        }
+                                    }
+                                    //Cancel Btn
+                                    btCancel.setOnClickListener {
+                                        dialog.dismiss()
+                                    }
+                                }
+
                             }
                             //Btn Delete
                             R.id.ic_delete -> context.showAlertDialog(

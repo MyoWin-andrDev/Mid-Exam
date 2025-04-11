@@ -186,7 +186,7 @@ class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) 
         val cv = ContentValues()
         cv.put("status", updateStatus)
         return try{
-            db.update(TBL_STATUS, cv, "user_id = ?", arrayOf(id.toString()))
+            db.update(TBL_STATUS, cv, "status_id = ?", arrayOf(id.toString()))
             true
         }
         catch (_ : Exception){

@@ -8,11 +8,10 @@ import android.view.LayoutInflater
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity.MODE_PRIVATE
 import androidx.core.content.ContextCompat
 import com.talentProgramming.midExam.R
 import com.talentProgramming.midExam.database.UserDB
-import com.talentProgramming.midExam.databinding.DialogEditBinding
+import com.talentProgramming.midExam.databinding.DialogEditAccountBinding
 //Toast Function
 fun Context.showToast(value : String){
     Toast.makeText(this, value, Toast.LENGTH_LONG).show()
@@ -48,26 +47,20 @@ fun Context.showAlertDialog(
 }
 
 @RequiresApi(Build.VERSION_CODES.P)
-@SuppressLint("InflateParams")
-fun Context.showEditDialog(context : Context , username : String , oldStatus : String){
-    val userDb = UserDB(context)
-    val binding = DialogEditBinding.inflate(LayoutInflater.from(context))
-    val builder = AlertDialog.Builder(context)
-    val dialog = builder
-        .setView(binding.root)
-        .setCancelable(true)
-        .create()
-    dialog.show()
+fun Context.confirmPassword(onSaveClick : (()->Unit)){
+    val userDb = UserDB(this)
+    val builder = AlertDialog.Builder(this)
+    val binding = DialogEditAccountBinding.inflate(LayoutInflater.from(this))
     binding.apply {
-        etStatus.setText(oldStatus)
-        //Update Btn
-        btUpdate.setOnClickListener {
-            if(userDb.updateStatus(etStatus.text.toString(), userDb.getUserId(username))){
-                context.showToast(etStatus.text.toString())
-                dialog.dismiss()
-            }
+        val dialog = builder
+            .setCancelable(true)
+            .setView(root)
+            .create()
+        dialog.show()
+        btSave.setOnClickListener{
+            onSaveClick()
+            dialog.dismiss()
         }
-        //Cancel Btn
         btCancel.setOnClickListener {
             dialog.dismiss()
         }

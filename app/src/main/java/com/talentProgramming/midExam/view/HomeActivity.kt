@@ -41,6 +41,7 @@ class HomeActivity : AppCompatActivity() {
             //BtnUpload
             btUpload.setOnClickListener{
                 statusDB.insertStatus(userId, username, etStatus.text.toString())
+                etStatus.setText("")
                 showToast("Successfully Uploaded")
                 refreshAdapter(UserDB(this@HomeActivity).getUserUploadStatus(username))
             }

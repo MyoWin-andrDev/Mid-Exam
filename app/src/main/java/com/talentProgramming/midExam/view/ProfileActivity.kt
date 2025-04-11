@@ -1,19 +1,18 @@
 package com.talentProgramming.midExam.view
 
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
-import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import com.talentProgramming.midExam.R
 import com.talentProgramming.midExam.databinding.ActivityProfileBinding
-import com.talentProgramming.midExam.databinding.ActivitySplashBinding
+import com.talentProgramming.midExam.utilities.confirmPassword
+import com.talentProgramming.midExam.utilities.showAlertDialog
 import com.talentProgramming.midExam.utilities.showToast
 
 class ProfileActivity : AppCompatActivity() {
     private lateinit var binding : ActivityProfileBinding
+    @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityProfileBinding.inflate(layoutInflater)
@@ -21,18 +20,31 @@ class ProfileActivity : AppCompatActivity() {
             setContentView(root)
             setSupportActionBar(tbProfile)
             tbProfile.setNavigationOnClickListener { finish() }
-        }
-    }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu_item_profile, menu)
-        return super.onCreateOptionsMenu(menu)
-    }
+            btEditUsername.setOnClickListener {
+                Intent(this@ProfileActivity, EditUsername::class.java).apply {
+                    startActivity(this)
+                }
+            }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when(item.itemId){
-            R.id.ic_save -> showToast("Profile Edit Successes !!!")
+            btEditPassword.setOnClickListener {
+                Intent(this@ProfileActivity, EditPassword::class.java).apply {
+                    startActivity(this)
+                }
+            }
+
+            btDeleteAccount.setOnClickListener {
+                showAlertDialog(
+                    "Delete Account ?",
+                    "Are you sure to delete account ?",
+                    "Delete",
+                    "Cancel",
+                    null,
+                    onPositiveClick = {
+                        confirmPassword { showToast("Account Deleted Successfully") }
+                    }
+                )
+            }
         }
-        return super.onOptionsItemSelected(item)
     }
 }
