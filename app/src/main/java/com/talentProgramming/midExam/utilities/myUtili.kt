@@ -94,13 +94,12 @@ fun customStringBuilder(errorList : List<String>) : StringBuilder{
 //Username Text Input Validation Check
 @RequiresApi(Build.VERSION_CODES.P)
 fun TextInputLayout.checkUsername(context: Context,username : String, oldUsername : String? = null) : Boolean {
-    val USERNAME_VALID_PATTERN = Regex("[A-Z][A-Za-z]*[0-9._]*")
+    val USERNAME_VALID_PATTERN = Regex("^[A-Z](?=.*[0-9])[A-Za-z0-9._@]{5,19}\$")
     val userDb = UserDB(context)
     var isUsernameChecked = false
     this.apply {
         if (username.isNotEmpty()) {
             if (username.matches(USERNAME_VALID_PATTERN)) {
-
                 if (!userDb.checkUsernameExist(username)) {
                     helperText = "Username is available."
                     isUsernameChecked = true
@@ -130,7 +129,7 @@ fun TextInputLayout.checkUsername(context: Context,username : String, oldUsernam
 
 @RequiresApi(Build.VERSION_CODES.P)
 fun TextInputLayout.checkPassword(context : Context, password : String) : Boolean{
-    val PASSWORD_VALID_PATTERN = Regex("^[A-Z][A-Za-z0-9!@#$%^&*._]{5,19}$")
+    val PASSWORD_VALID_PATTERN = Regex("^[A-Z](?=.*[0-9])(?=.*[!@#\$%^&*._])[A-Za-z0-9!@#\$%^&*._]{4,18}\$")
     val userDb = UserDB(context)
     var isPasswordChecked = false
     if(password.isNotEmpty()){
@@ -160,7 +159,7 @@ fun TextInputLayout.checkPassword(context : Context, password : String) : Boolea
 
 @RequiresApi(Build.VERSION_CODES.P)
 fun TextInputLayout.checkRePassword(context: Context, password : String, rePassword : String) : Boolean {
-    val PASSWORD_VALID_PATTERN = Regex("^[A-Z][A-Za-z0-9!@#$%^&*._]{5,19}$")
+    val PASSWORD_VALID_PATTERN = Regex("^[A-Z](?=.*[0-9])(?=.*[!@#\$%^&*._])[A-Za-z0-9!@#\$%^&*._]{4,18}\$")
     val userDb = UserDB(context)
     var isRePasswordChecked = false
     if(rePassword.isNotEmpty()){
