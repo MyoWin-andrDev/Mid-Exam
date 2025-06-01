@@ -12,66 +12,69 @@
         android:id="@+id/tbHome"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
         android:background="?attr/colorPrimary"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:menu="@menu/menu_item_home"
         app:title="Upload Status"
-        app:titleTextColor="?attr/colorOnPrimary"
-        app:menu="@menu/menu_item_home"/>
+        app:titleTextColor="?attr/colorOnPrimary" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/ilStatus"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-        app:layout_constraintTop_toBottomOf="@id/tbHome"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:textColorHint="@color/md_theme_secondary"
         android:layout_marginStart="24dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="24dp"
-        android:layout_marginTop="8dp">
+        android:textColorHint="@color/md_theme_secondary"
+        app:endIconDrawable="@drawable/ic_clear"
+        app:endIconMode="clear_text"
+        app:endIconTint="@color/md_theme_primary"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tbHome">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
             android:hint="What's on your mind?"
-            android:drawableEnd="@drawable/ic_clear"
+            android:inputType="text"
             android:textColorHint="@color/md_theme_primary"
-            android:inputType="text"/>
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btUpload"
+        style="@style/Widget.MaterialComponents.Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        style="@style/Widget.MaterialComponents.Button"
-        android:text="Upload"
-        app:layout_constraintTop_toBottomOf="@id/ilStatus"
-        app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginStart="40dp"
-        android:layout_marginEnd="40dp"
         android:layout_marginTop="16dp"
+        android:layout_marginEnd="40dp"
+        android:padding="8dp"
+        android:text="Upload"
         app:cornerRadius="8dp"
-        android:padding="8dp"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ilStatus" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvStatus"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        tools:listitem="@layout/list_view_status"
-        app:layout_constraintTop_toBottomOf="@id/btUpload"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        android:layout_marginTop="16dp"
+        android:layout_height="0dp"
         android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"/>
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btUpload"
+        tools:listitem="@layout/list_view_status" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

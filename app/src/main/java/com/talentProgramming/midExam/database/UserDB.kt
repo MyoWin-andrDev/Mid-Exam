@@ -1,198 +1,188 @@
 package com.talentProgramming.midExam.database
 
-import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import android.os.Build
-import androidx.annotation.RequiresApi
 import com.talentProgramming.midExam.model.StatusModel
 import com.talentProgramming.midExam.model.UserModel
 
-@RequiresApi(Build.VERSION_CODES.P)
-class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) {
-    val TBL_USER= "tbl_user"
-    val TBL_STATUS = "tbl_status"
-    private lateinit var db : SQLiteDatabase
+class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB", null, 1) {
+    private val TBL_USER = "tbl_user"
+    private val TBL_STATUS = "tbl_status"
 
-    override fun onCreate(sqLiteDatabase: SQLiteDatabase?) {
-        sqLiteDatabase?.execSQL("""CREATE TABLE $TBL_USER (user_id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT)""")
-        sqLiteDatabase?.execSQL("CREATE TABLE $TBL_STATUS (status_id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, username TEXT NOT NULL ,status TEXT NOT NULL, uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (user_id) REFERENCES $TBL_USER(user_id) ON DELETE CASCADE)")
+    override fun onCreate(db: SQLiteDatabase?) {
+        db?.execSQL(
+            """
+        CREATE TABLE $TBL_USER (
+            user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE,
+            password TEXT
+        )
+    """.trimIndent()
+        )
+
+        db?.execSQL(
+            """
+        CREATE TABLE $TBL_STATUS (
+            status_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            username TEXT NOT NULL,
+            status TEXT NOT NULL,
+            uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES $TBL_USER(user_id) ON DELETE CASCADE
+        )
+    """.trimIndent()
+        )
     }
 
-    override fun onUpgrade(sqliteDatabase: SQLiteDatabase?, p1: Int, p2: Int) {
-        sqliteDatabase?.execSQL("DROP TABLE IF EXISTS $TBL_USER")
-        sqliteDatabase?.execSQL("DROP TABLE IF EXISTS $TBL_STATUS")
-        onCreate(sqliteDatabase)
+    override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
+        db?.execSQL("DROP TABLE IF EXISTS $TBL_STATUS")
+        db?.execSQL("DROP TABLE IF EXISTS $TBL_USER")
+        onCreate(db)
     }
+
+
     //TBL_USER Functions
-    fun insertUser(userName : String, password : String) : Boolean {
-        db = this@UserDB.writableDatabase
-        val cv = ContentValues()
-        cv.put("username", userName)
-        cv.put("password", password)
-         return try {
-            db.insertOrThrow(TBL_USER, null, cv)
-            true
-        }catch (e : Exception){
-            false
+    fun insertUser(userName: String, password: String): Boolean = runCatching {
+        val values = ContentValues().apply {
+            put("username", userName)
+            put("password", password)
         }
-        finally {
-            db.close()
-        }
-    }
 
-    fun updateUser(userId : Int ,username : String) : Boolean{
-        db = this@UserDB.writableDatabase
-        val cv = ContentValues()
-        cv.put("username", username)
-        try {
-            db.update(TBL_USER, cv, "user_id = ?", arrayOf(userId.toString()))
-            db.close()
-            return true
-        }catch (e : Exception){
-            db.close()
-            return false
+        writableDatabase.use { db ->
+            db.insertOrThrow(TBL_USER, null, values)
         }
-    }
+        true
+    }.getOrDefault(false)
 
-    fun updatePassword(id : Int, password : String) : Boolean{
-        db = this@UserDB.writableDatabase
-        val cv = ContentValues()
-        cv.put("password", password)
-        return try {
-            db.update(TBL_USER, cv, "user_id = ?", arrayOf(id.toString()))
-            true
-        }
-        catch (_ : Exception){
-            false
-        }
-        finally {
-            db.close()
-        }
-    }
 
-    fun deleteUser(userId : Int) : Boolean{
-        db = this@UserDB.writableDatabase
-        return try {
+    fun updateUser(userId: Int, username: String): Boolean = runCatching {
+        val values = ContentValues().apply {
+            put("username", username)
+        }
+
+        writableDatabase.use { db ->
+            db.update(TBL_USER, values, "user_id = ?", arrayOf(userId.toString()))
+        }
+        true
+    }.getOrDefault(false)
+
+    fun updatePassword(id: Int, password: String): Boolean = runCatching {
+        val values = ContentValues().apply {
+            put("password", password)
+        }
+
+        writableDatabase.use { db ->
+            db.update(TBL_USER, values, "user_id = ?", arrayOf(id.toString()))
+        }
+        true
+    }.getOrDefault(false)
+
+    fun deleteUser(userId: Int): Boolean = runCatching {
+        writableDatabase.use { db ->
             db.delete(TBL_USER, "user_id = ?", arrayOf(userId.toString()))
-            true
         }
-        catch(_ : Exception) {
-            false
-        }
-        finally {
-            db.close()
-        }
-    }
+        true
+    }.getOrDefault(false)
 
-    fun getUserId(username: String) : Int {
-        db = this.readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM $TBL_USER WHERE username = ?", arrayOf(username))
-        var userId = 0
-        if(cursor.moveToFirst()){
-            while (!cursor.isAfterLast){
-                userId = cursor.getInt(cursor.getColumnIndexOrThrow("user_id"))
-                cursor.moveToNext()
+    fun checkUsernameExist(username: String): Boolean {
+        val query = "SELECT 1 FROM $TBL_USER WHERE username = ? LIMIT 1"
+
+        return readableDatabase.use { db ->
+            db.rawQuery(query, arrayOf(username)).use { cursor ->
+                cursor.moveToFirst() // returns true if at least one row exists
             }
         }
-        cursor.close()
-        db.close()
-        return userId
     }
 
-    fun checkUsernameExist(username : String) : Boolean {
-        db = this.readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM $TBL_USER WHERE username = ?", arrayOf(username))
-        val exists = cursor.count > 0
-        cursor.close()
-        db.close()
-        return exists
-    }
+    fun checkPassword(username: String): String {
+        val query = "SELECT password FROM $TBL_USER WHERE username = ?"
 
-    fun checkPassword(username : String) : String{
-        db = this.readableDatabase
-        val cursor = db.rawQuery("SELECT password FROM $TBL_USER WHERE username = ?", arrayOf(username))
-        var password : String = ""
-        if(cursor.moveToFirst()){
-            while(!cursor.isAfterLast){
-                password = cursor.getString(cursor.getColumnIndexOrThrow("password"))
-                cursor.moveToNext()
+        return readableDatabase.use { db ->
+            db.rawQuery(query, arrayOf(username)).use { cursor ->
+                if (cursor.moveToFirst()) {
+                    cursor.getString(cursor.getColumnIndexOrThrow("password"))
+                } else {
+                    ""
+                }
             }
         }
-        cursor.close()
-        db.close()
-        return password
     }
+
+    fun getUser(username: String, password: String): UserModel? {
+        val query = "SELECT * FROM $TBL_USER WHERE username = ? AND password = ?"
+
+        return readableDatabase.use { db ->
+            db.rawQuery(query, arrayOf(username, password)).use { cursor ->
+                if (cursor.moveToFirst()) {
+                    UserModel(
+                        id = cursor.getInt(cursor.getColumnIndexOrThrow("user_id")),
+                        userName = cursor.getString(cursor.getColumnIndexOrThrow("username")),
+                        password = cursor.getString(cursor.getColumnIndexOrThrow("password"))
+                    )
+                } else null
+            }
+        }
+    }
+
     //TBL_STATUS Functions
 
-    fun insertStatus(userId : Int, username : String ,status : String) : Boolean {
-        db = this.writableDatabase
-        val cv = ContentValues()
-        cv.put("user_id", userId)
-        cv.put("username", username)
-        cv.put("status", status)
-        return try {
-            db.insert(TBL_STATUS , null, cv)
-            true
+    fun insertStatus(userId: Int, username: String, status: String): Boolean = runCatching {
+        val values = ContentValues().apply {
+            put("user_id", userId)
+            put("username", username)
+            put("status", status)
         }
-        catch (e : Exception){
-            false
-        }
-        finally {
-            db.close()
-        }
-    }
 
-    fun getUserUploadStatus(username : String) : List<StatusModel>{
-        db = this.readableDatabase
-        val statusList = arrayListOf<StatusModel>()
-        val cursor = db.rawQuery("SELECT * FROM $TBL_STATUS us JOIN $TBL_USER u ON us.user_id = u.user_id WHERE u.username = ?", arrayOf(username))
-        if(cursor.moveToFirst()){
-            while (!cursor.isAfterLast){
-                statusList.add(StatusModel(
-                    cursor.getInt(cursor.getColumnIndexOrThrow("status_id")),
-                    cursor.getInt(cursor.getColumnIndexOrThrow("user_id")),
-                    cursor.getString(cursor.getColumnIndexOrThrow("username")),
-                    cursor.getString(cursor.getColumnIndexOrThrow("status")),
-                    cursor.getString(cursor.getColumnIndexOrThrow("uploaded_at"))
-                ))
-                cursor.moveToNext()
+        writableDatabase.use { db ->
+            db.insert(TBL_STATUS, null, values)
+        }
+
+        true
+    }.getOrDefault(false)
+
+    fun getUserUploadStatus(userId: Int): List<StatusModel> {
+        val query = """
+        SELECT * FROM $TBL_STATUS us
+        JOIN $TBL_USER u ON us.user_id = u.user_id
+        WHERE us.user_id = ?
+    """.trimIndent()
+
+        return readableDatabase.use { db ->
+            db.rawQuery(query, arrayOf(userId.toString())).use { cursor ->
+                val statusList = mutableListOf<StatusModel>()
+                while (cursor.moveToNext()) {
+                    statusList.add(
+                        StatusModel(
+                            statusId = cursor.getInt(cursor.getColumnIndexOrThrow("status_id")),
+                            userId = cursor.getInt(cursor.getColumnIndexOrThrow("user_id")),
+                            username = cursor.getString(cursor.getColumnIndexOrThrow("username")),
+                            status = cursor.getString(cursor.getColumnIndexOrThrow("status")),
+                            timeStamp = cursor.getString(cursor.getColumnIndexOrThrow("uploaded_at")),
+                        )
+                    )
+                }
+                statusList
             }
         }
-        cursor.close()
-        db.close()
-        return statusList
     }
 
-    fun deleteStatus(id : Int) : Boolean {
-        db = this@UserDB.writableDatabase
-        return try{
-            db.delete(TBL_STATUS, "status_id = ?" , arrayOf(id.toString()))
-            true
+    fun deleteStatus(id: Int): Boolean = runCatching {
+        writableDatabase.use { db ->
+            db.delete(TBL_STATUS, "status_id = ?", arrayOf(id.toString()))
         }
-        catch( _ : Exception){
-            false
-        }
-        finally {
-            db.close()
-        }
-    }
+        true
+    }.getOrDefault(false)
 
-    fun updateStatus(updateStatus : String , id : Int) : Boolean {
-        db = this@UserDB.writableDatabase
-        val cv = ContentValues()
-        cv.put("status", updateStatus)
-        return try{
-            db.update(TBL_STATUS, cv, "status_id = ?", arrayOf(id.toString()))
-            true
+    fun updateStatus(status: String, id: Int): Boolean = runCatching {
+        val values = ContentValues().apply {
+            put("status", status)
         }
-        catch (_ : Exception){
-            false
+        writableDatabase.use { db ->
+            db.update(TBL_STATUS, values, "status_id = ?", arrayOf(id.toString()))
         }
-        finally {
-            db.close()
-        }
-    }
+        true
+    }.getOrDefault(false)
+
 }

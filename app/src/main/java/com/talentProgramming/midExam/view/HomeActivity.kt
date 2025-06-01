@@ -1,90 +1,185 @@
 package com.talentProgramming.midExam.view
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.SharedPreferences
-import android.os.Build
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
-import androidx.annotation.RequiresApi
+import android.view.LayoutInflater
+import android.view.View
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.PopupMenu
+import com.shashank.sony.fancytoastlib.FancyToast
 import com.talentProgramming.midExam.R
 import com.talentProgramming.midExam.adapter.StatusAdapter
 import com.talentProgramming.midExam.database.UserDB
 import com.talentProgramming.midExam.databinding.ActivityHomeBinding
+import com.talentProgramming.midExam.databinding.DialogEditStatusBinding
 import com.talentProgramming.midExam.model.StatusModel
 import com.talentProgramming.midExam.utilities.showAlertDialog
 import com.talentProgramming.midExam.utilities.showToast
 
 class HomeActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityHomeBinding
-    private lateinit var statusDB : UserDB
-    private lateinit var sharedPreferences: SharedPreferences
-    private lateinit var username : String
 
-    @RequiresApi(Build.VERSION_CODES.P)
-    @SuppressLint("UseSupportActionBar")
+    private lateinit var binding: ActivityHomeBinding
+    private lateinit var userDb: UserDB
+    private lateinit var sharedPreferences: SharedPreferences
+    private var username: String? = null
+    private var userId: Int = 0
+    private lateinit var statusAdapter: StatusAdapter
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityHomeBinding.inflate(layoutInflater)
-        binding.apply {
-            setContentView(root)
-            setSupportActionBar(tbHome)
-            sharedPreferences = getSharedPreferences("MY_PREF", MODE_PRIVATE)
-            //Value from Login Activity
-            username = sharedPreferences.getString("usernameLoggedIn" , null)!!
-            val userId = UserDB(this@HomeActivity).getUserId(username)
-            showToast("Welcome $username !!!")
-            statusDB  = UserDB(this@HomeActivity)
-            refreshAdapter(statusDB.getUserUploadStatus(username))
-            //BtnUpload
-            btUpload.setOnClickListener{
-                statusDB.insertStatus(userId, username, etStatus.text.toString())
-                etStatus.setText("")
-                showToast("Successfully Uploaded")
-                refreshAdapter(statusDB.getUserUploadStatus(username))
-            }
-        }
+        setContentView(binding.root)
+
+        initObjects()
+        setupCustomToolbar()
+        setupWelcomeMessage()
+        setupUploadButton()
+        refreshAdapter()
     }
 
-    @RequiresApi(Build.VERSION_CODES.P)
     override fun onResume() {
         super.onResume()
-        refreshAdapter(statusDB.getUserUploadStatus(username))
+        refreshAdapter()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu_item_home, menu)
-        return super.onCreateOptionsMenu(menu)
+    private fun initObjects() {
+        sharedPreferences = getSharedPreferences("MY_PREF", MODE_PRIVATE).apply {
+            userId = getInt("userId", 0)
+            username = getString("usernameLoggedIn", null)
+        }
+        userDb = UserDB(this)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when(item.itemId){
-            R.id.profile -> Intent(this@HomeActivity, ProfileActivity::class.java).apply { startActivity(this) }
-            R.id.logout -> {
-                showAlertDialog(
-                    title = "Log out",
-                    message = "Are you sure you want to log out?",
-                    positiveButtonText = "YES",
-                    negativeButtonText = "NO",
-                    onPositiveClick = {
-                        //Edit PREF
-                        val editor = sharedPreferences.edit()
-                        editor.putBoolean("isUserLoggedIn", false)
-                        editor.apply()
-                        Intent(this@HomeActivity, LoginActivity::class.java).apply {
-                            startActivity(this)
-                        }
-                        finish()
-                    }
-                )
+    private fun setupCustomToolbar() = with(binding.tbHome) {
+        title = "Home"
+        setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.profile -> {
+                    startActivity(Intent(this@HomeActivity, ProfileActivity::class.java))
+                    true
+                }
+
+                R.id.logout -> {
+                    confirmLogout()
+                    true
+                }
+
+                else -> false
             }
         }
-        return super.onOptionsItemSelected(item)
     }
-    private fun refreshAdapter(statusList: List<StatusModel>){
-        binding.rvStatus.adapter = StatusAdapter(this@HomeActivity, username , statusList)
+
+
+    private fun setupWelcomeMessage() {
+        showToast("Welcome $username !!!")
+    }
+
+    private fun setupUploadButton() {
+        binding.btUpload.setOnClickListener {
+            val statusText = binding.etStatus.text.toString().trim()
+            if (statusText.isEmpty()) {
+                showToast("Please enter a status", FancyToast.WARNING)
+                return@setOnClickListener
+            }
+
+            val isInserted = userDb.insertStatus(userId, username ?: "", statusText)
+            if (isInserted) {
+                binding.etStatus.text?.clear()
+                showToast("Successfully Uploaded")
+                refreshAdapter()
+            } else {
+                showToast("Upload failed. Please try again.", FancyToast.ERROR)
+            }
+        }
+    }
+
+    private fun refreshAdapter() {
+        val statusList = userDb.getUserUploadStatus(userId)
+        statusAdapter = StatusAdapter(statusList, ::onStatusItemMoreClicked)
+        binding.rvStatus.adapter = statusAdapter
+    }
+
+    private fun onStatusItemMoreClicked(anchorView: View, statusItem: StatusModel) {
+        PopupMenu(this, anchorView).apply {
+            menuInflater.inflate(R.menu.menu_item_status, menu)
+            setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.ic_edit -> showEditDialog(statusItem)
+                    R.id.ic_delete -> showDeleteDialog(statusItem)
+                }
+                true
+            }
+            show()
+        }
+    }
+
+
+    private fun confirmLogout() {
+        showAlertDialog(
+            title = "Log out",
+            message = "Are you sure you want to log out?",
+            positiveButtonText = "YES",
+            negativeButtonText = "NO",
+            onPositiveClick = {
+                sharedPreferences.edit()
+                    .putBoolean("isUserLoggedIn", false)
+                    .apply()
+                navigateToLogin()
+            }
+        )
+    }
+
+
+    private fun navigateToLogin() {
+        startActivity(Intent(this, LoginActivity::class.java))
+        finish()
+    }
+
+    private fun showEditDialog(statusItem: StatusModel) {
+        val dialogBinding = DialogEditStatusBinding.inflate(LayoutInflater.from(this))
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogBinding.root)
+            .setCancelable(true)
+            .create()
+        dialog.show()
+
+        dialogBinding.apply {
+            etStatus.setText(statusItem.status)
+
+            btUpdate.setOnClickListener {
+                val updatedStatus = etStatus.text.toString()
+                if (userDb.updateStatus(updatedStatus, statusItem.statusId)) {
+                    refreshStatusList()
+                    showToast("Update Status Successfully")
+                    dialog.dismiss()
+                }
+            }
+
+            btCancel.setOnClickListener {
+                dialog.dismiss()
+            }
+        }
+    }
+
+    private fun showDeleteDialog(statusItem: StatusModel) {
+        showAlertDialog(
+            title = "Delete Status?",
+            message = "Are you sure you want to delete this status?",
+            positiveButtonText = "Delete",
+            negativeButtonText = "Cancel",
+            onPositiveClick = {
+                if (userDb.deleteStatus(statusItem.statusId)) {
+                    refreshStatusList()
+                    showToast("Delete Status Successfully")
+                }
+            }
+        )
+    }
+
+    private fun refreshStatusList() {
+        statusAdapter.updateStatusList(userDb.getUserUploadStatus(userId))
     }
 
 }

@@ -1,196 +1,214 @@
 package com.talentProgramming.midExam.utilities
 
-import android.annotation.SuppressLint
 import android.content.Context
-import android.content.SharedPreferences
-import android.os.Build
 import android.view.LayoutInflater
-import android.view.View
-import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import com.google.android.material.textfield.TextInputLayout
 import com.shashank.sony.fancytoastlib.FancyToast
 import com.talentProgramming.midExam.R
 import com.talentProgramming.midExam.database.UserDB
-import com.talentProgramming.midExam.databinding.ActivityLoginBinding
-import com.talentProgramming.midExam.databinding.ActivityRegisterBinding
 import com.talentProgramming.midExam.databinding.DialogEditAccountBinding
+
 //Toast Function
-fun Context.showToast(value : String){
-    FancyToast.makeText(this, value ,FancyToast.LENGTH_LONG,FancyToast.SUCCESS,true).show()
+fun Context.showToast(
+    message: String,
+    @FancyToast.LayoutType toastType: Int = FancyToast.SUCCESS,
+    duration: Int = FancyToast.LENGTH_SHORT,
+    withIcon: Boolean = true
+) {
+    FancyToast.makeText(this, message, duration, toastType, withIcon).show()
 }
 
-//Dialog Function
-@SuppressLint("SuspiciousIndentation", "ResourceAsColor")
 fun Context.showAlertDialog(
-    title : String,
-    message : String ,
-    positiveButtonText : String,
-    negativeButtonText : String,
-    toastMessage : String? = null,
-    onPositiveClick : (() -> Unit)? = null
-){
-    val builder = AlertDialog.Builder(this)
-        builder.setTitle(title)
-            .setMessage(message)
-            .setCancelable(true)
-            .setPositiveButton(positiveButtonText){ _, _ ->
-                onPositiveClick?.invoke()
-            }
-            .setNegativeButton(negativeButtonText){dialog,_ ->
-                dialog.dismiss()
-            }.show()
-                .apply {
-        getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(context, R.color.md_theme_error))
-        getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ContextCompat.getColor(context, R.color.md_theme_tertiary))
+    title: String,
+    message: String,
+    positiveButtonText: String,
+    negativeButtonText: String,
+    toastMessage: String? = null,
+    onPositiveClick: (() -> Unit)? = null
+) {
+    val dialog = AlertDialog.Builder(this)
+        .setTitle(title)
+        .setMessage(message)
+        .setCancelable(true)
+        .setPositiveButton(positiveButtonText) { _, _ ->
+            onPositiveClick?.invoke()
+        }
+        .setNegativeButton(negativeButtonText, null)
+        .create()
+
+    dialog.setOnShowListener {
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(
+            ContextCompat.getColor(this, R.color.md_theme_error)
+        )
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(
+            ContextCompat.getColor(this, R.color.md_theme_tertiary)
+        )
     }
-    toastMessage?.apply {
-        showToast(this)
-    }
+
+    dialog.show()
+    toastMessage?.let { showToast(it) }
 }
 
-@RequiresApi(Build.VERSION_CODES.P)
-fun Context.confirmPassword(username : String, onSaveClick : (()->Unit)){
+fun Context.confirmPassword(username: String, onSaveClick: () -> Unit) {
     val userDb = UserDB(this)
-    val builder = AlertDialog.Builder(this)
-    val binding = DialogEditAccountBinding.inflate(LayoutInflater.from(this))
-    binding.apply {
-        val dialog = builder
-            .setCancelable(true)
-            .setView(root)
-            .create()
-        dialog.show()
-        btSave.setOnClickListener{
-            if(etPassword.text.toString() == userDb.checkPassword(username)){
-                ilPassword.helperText = ""
-                onSaveClick()
-            }
-            else if(etPassword.text.toString().isEmpty()){
-                ilPassword.error = "Password must be filled."
-            }
-            else{
-                ilPassword.error = "Your password is incorrect."
+    val dialogBinding = DialogEditAccountBinding.inflate(LayoutInflater.from(this))
+
+    val dialog = AlertDialog.Builder(this)
+        .setView(dialogBinding.root)
+        .setCancelable(true)
+        .create()
+
+    with(dialogBinding) {
+        btSave.setOnClickListener {
+            val enteredPassword = etPassword.text.toString()
+            val correctPassword = userDb.checkPassword(username)
+
+            when {
+                enteredPassword.isEmpty() -> {
+                    ilPassword.error = "Password must be filled."
+                }
+
+                enteredPassword != correctPassword -> {
+                    ilPassword.error = "Your password is incorrect."
+                }
+
+                else -> {
+                    ilPassword.error = null
+                    ilPassword.helperText = ""
+                    dialog.dismiss()
+                    onSaveClick()
+                }
             }
         }
-        btCancel.setOnClickListener {
-            dialog.dismiss()
-        }
+
+        btCancel.setOnClickListener { dialog.dismiss() }
     }
+
+    dialog.show()
 }
 
-fun customStringBuilder(errorList : List<String>) : StringBuilder{
-    val stringBuilder = StringBuilder()
-    errorList.forEach {
-        stringBuilder
-            .append("\u2022")//Bullet Point
-            .append(" ")
-            .append(it)
-            .append("\n")
-    }
-    return stringBuilder
-}
-//Username Text Input Validation Check
-@RequiresApi(Build.VERSION_CODES.P)
-fun TextInputLayout.checkUsername(context: Context,username : String, oldUsername : String? = null) : Boolean {
-    val USERNAME_VALID_PATTERN = Regex("^[A-Z](?=.*[0-9])[A-Za-z0-9._@]{5,19}\$")
-    val userDb = UserDB(context)
-    var isUsernameChecked = false
-    this.apply {
-        if (username.isNotEmpty()) {
-            if (username.matches(USERNAME_VALID_PATTERN)) {
-                if (!userDb.checkUsernameExist(username)) {
-                    helperText = "Username is available."
-                    isUsernameChecked = true
-                }else if(oldUsername?.isNotEmpty() == true && username == oldUsername){
-                    helperText = "Username Unchanged"
-                    isUsernameChecked = true
-                }
-                else {
-                    error = customStringBuilder(listOf("Username is already taken."))
-                }
-            } else {
-                error = customStringBuilder(
-                    listOf(
-                        "Username must be start with capital letter.",
-                        "Username must be contain a number(0 to 9)."
-                    )
-                )
-            }
-        } else {
-            error = customStringBuilder(
-                listOf("Username must be filled.")
-            )
-        }
-    }
-    return isUsernameChecked
-}
 
-@RequiresApi(Build.VERSION_CODES.P)
-fun TextInputLayout.checkPassword(context : Context, password : String) : Boolean{
-    val PASSWORD_VALID_PATTERN = Regex("^[A-Z](?=.*[0-9])(?=.*[!@#\$%^&*._])[A-Za-z0-9!@#\$%^&*._]{4,18}\$")
+fun customStringBuilder(errorList: List<String>): StringBuilder =
+    StringBuilder(errorList.joinToString("") { "\u2022 $it" + "\n" })
+
+
+fun TextInputLayout.checkUsername(
+    context: Context,
+    username: String,
+    oldUsername: String? = null
+): Boolean {
+    val usernamePattern = Regex("^[A-Z](?=.*[0-9])[A-Za-z0-9._@]{5,19}$")
     val userDb = UserDB(context)
-    var isPasswordChecked = false
-    if(password.isNotEmpty()){
-        if(password.matches(PASSWORD_VALID_PATTERN)){
-            if(password.length > 5){
-                helperText = "Strong Password"
-                isPasswordChecked = true
-            }
-        }else{
+
+    return when {
+        username.isBlank() -> {
+            error = customStringBuilder(listOf("Username must be filled."))
+            false
+        }
+
+        !username.matches(usernamePattern) -> {
             error = customStringBuilder(
                 listOf(
-                    "Password must be start with capital letter.",
-                    "Password must be at least 6 characters.",
-                    "Password must be contained a number(0 to 9).",
-                    "Password must be contained a special character(!@#\$%^&*._).",
+                    "Username must start with a capital letter.",
+                    "Username must contain a number (0 to 9)."
                 )
             )
+            false
+        }
+
+        userDb.checkUsernameExist(username) && username != oldUsername -> {
+            error = customStringBuilder(listOf("Username is already taken."))
+            false
+        }
+
+        username == oldUsername -> {
+            error = null
+            helperText = "Username Unchanged"
+            true
+        }
+
+        else -> {
+            error = null
+            helperText = "Username is available."
+            true
         }
     }
-    else{
-        error = customStringBuilder(
-            listOf("Password must be filled.")
-        )
-    }
-    return isPasswordChecked
 }
 
-@RequiresApi(Build.VERSION_CODES.P)
-fun TextInputLayout.checkRePassword(context: Context, password : String, rePassword : String) : Boolean {
-    val PASSWORD_VALID_PATTERN = Regex("^[A-Z](?=.*[0-9])(?=.*[!@#\$%^&*._])[A-Za-z0-9!@#\$%^&*._]{4,18}\$")
-    val userDb = UserDB(context)
-    var isRePasswordChecked = false
-    if(rePassword.isNotEmpty()){
-        if(rePassword.matches(PASSWORD_VALID_PATTERN)){
-            if(rePassword.length > 5){
-                helperText = "Strong Password"
-                if(password == rePassword){
-                    isRePasswordChecked = true
-                }
-                else{
-                    error = customStringBuilder(listOf("Password confirmation does not match."))
-                    error = customStringBuilder(listOf("Password confirmation does not match."))
-                }
-            }
-        }else{
+
+fun TextInputLayout.checkPassword(password: String): Boolean {
+    val passwordPattern = Regex("^[A-Z](?=.*[0-9])(?=.*[!@#\$%^&*._])[A-Za-z0-9!@#\$%^&*._]{5,19}$")
+
+    return when {
+        password.isBlank() -> {
+            error = customStringBuilder(listOf("Password must be filled."))
+            false
+        }
+
+        !password.matches(passwordPattern) -> {
             error = customStringBuilder(
                 listOf(
-                    "Password must be start with capital letter.",
+                    "Password must start with a capital letter.",
                     "Password must be at least 6 characters.",
-                    "Password must be contained a number(0 to 9).",
-                    "Password must be contained a special character(!@#\$%^&*._).",
+                    "Password must contain a number (0–9).",
+                    "Password must contain a special character (!@#\$%^&*._)."
                 )
             )
+            false
+        }
+
+        else -> {
+            error = null
+            helperText = "Strong Password"
+            true
         }
     }
-    else{
-        error = customStringBuilder(
-            listOf("Password must be filled.")
-        )
-    }
-    return isRePasswordChecked
 }
+
+fun TextInputLayout.checkRePassword(
+    password: String,
+    rePassword: String
+): Boolean {
+    val passwordPattern = Regex("^[A-Z](?=.*[0-9])(?=.*[!@#\$%^&*._])[A-Za-z0-9!@#\$%^&*._]{4,18}$")
+
+    return when {
+        rePassword.isBlank() -> {
+            error = customStringBuilder(listOf("Password must be filled."))
+            false
+        }
+
+        !rePassword.matches(passwordPattern) -> {
+            error = customStringBuilder(
+                listOf(
+                    "Password must start with a capital letter.",
+                    "Password must be at least 6 characters.",
+                    "Password must contain a number (0 to 9).",
+                    "Password must contain a special character (!@#\$%^&*._)."
+                )
+            )
+            false
+        }
+
+        rePassword.length <= 5 -> {
+            error = customStringBuilder(listOf("Password must be more than 5 characters."))
+            false
+        }
+
+        password != rePassword -> {
+            error = customStringBuilder(listOf("Password confirmation does not match."))
+            false
+        }
+
+        else -> {
+            error = null
+            helperText = "Strong Password"
+            true
+        }
+    }
+}
+
+
 
 
