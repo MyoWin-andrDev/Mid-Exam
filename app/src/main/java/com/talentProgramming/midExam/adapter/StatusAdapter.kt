@@ -52,7 +52,7 @@ class StatusAdapter(private val context : Context, private val username : String
                                     etStatus.setText(statusList[position].status)
                                     //Update Btn
                                     btUpdate.setOnClickListener {
-                                        if(userDb.updateStatus(etStatus.text.toString(), statusList[position].status_id)){
+                                        if(userDb.updateStatus(etStatus.text.toString(), statusList[position].statusId)){
                                             updateStatusList(userDb.getUserUploadStatus(username))
                                             context.showToast("Update Status Successfully")
                                             dialog.dismiss()
@@ -73,7 +73,7 @@ class StatusAdapter(private val context : Context, private val username : String
                                 "Cancel",
                                 null,
                                 onPositiveClick = {
-                                    if(userDb.deleteStatus(statusList[position].status_id)){
+                                    if(userDb.deleteStatus(statusList[position].statusId)){
                                         updateStatusList(userDb.getUserUploadStatus(username))
                                         context.showToast("Delete Status Successfully")
                                     }
