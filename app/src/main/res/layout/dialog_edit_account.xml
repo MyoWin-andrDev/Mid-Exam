@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:text="Enter Password to Proceed "
+        android:text="Enter Old Password to Proceed "
         android:textSize="20sp"
         android:textStyle="bold"
         android:layout_marginStart="24dp"
@@ -29,7 +29,8 @@
         android:layout_margin="24dp"
         app:errorEnabled="true"
         app:helperTextEnabled="true"
-        app:helperTextTextColor="?attr/colorPrimary">
+        app:helperTextTextColor="?attr/colorPrimary"
+        app:errorIconDrawable="@null">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etPassword"
@@ -37,7 +38,7 @@
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:hint="Enter Password"
+            android:hint="Enter Old Password"
             android:textColorHint="@color/md_theme_primary"
             android:inputType="textPassword"/>
 

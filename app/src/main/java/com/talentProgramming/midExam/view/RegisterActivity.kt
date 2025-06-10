@@ -1,64 +1,71 @@
 package com.talentProgramming.midExam.view
 
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
-import android.util.Log
-import androidx.activity.enableEdgeToEdge
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.widget.addTextChangedListener
-import com.talentProgramming.midExam.R
+import com.shashank.sony.fancytoastlib.FancyToast
 import com.talentProgramming.midExam.database.UserDB
 import com.talentProgramming.midExam.databinding.ActivityRegisterBinding
-import com.talentProgramming.midExam.utilities.checkPassword
-import com.talentProgramming.midExam.utilities.checkRePassword
-import com.talentProgramming.midExam.utilities.checkUsername
-import com.talentProgramming.midExam.utilities.customStringBuilder
-import com.talentProgramming.midExam.utilities.showToast
+import com.talentProgramming.midExam.utilities.*
 
 class RegisterActivity : AppCompatActivity() {
-    private lateinit var binding : ActivityRegisterBinding
-    private lateinit var userDB : UserDB
-    private var checkUsername = false
-    private var checkPassword= false
-    private var checkRePassword = false
-    @RequiresApi(Build.VERSION_CODES.P)
+
+    private lateinit var binding: ActivityRegisterBinding
+    private lateinit var userDB: UserDB
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRegisterBinding.inflate(layoutInflater)
-        userDB = UserDB(this)
-        binding.apply {
-            setContentView(root)
-            btLogin.setOnClickListener {
-                startActivity(Intent(this@RegisterActivity, LoginActivity::class.java))
-            }
+        setContentView(binding.root)
 
-            btSignUp.setOnClickListener {
-                //Username TextInput Validation Check
-                checkUsername = ilUsername.checkUsername(this@RegisterActivity, etUsername.text.toString())
-                //Password TextInput Validation Check
-                checkPassword = ilPassword.checkPassword(this@RegisterActivity, etPassword.text.toString())
-                //Re-Password TextInput Validation Check
-                checkRePassword = ilRePassword.checkRePassword(this@RegisterActivity, etPassword.text.toString(), etRePassword.text.toString())
-                //Register
-                if(checkUsername && checkPassword && checkRePassword){
-                    if(userDB.insertUser(etUsername.text.toString().trim(), etPassword.text.toString().trim())){
-                        showToast("Your account has been successfully created.")
-                        Intent(this@RegisterActivity, LoginActivity::class.java).apply {
-                            startActivity(this)
-                            finish()
-                        }
-                    }
-                }
-                else{
-                    showToast("Something Went Wrong. Please Try Again.")
-                }
+        userDB = UserDB(this)
+        setupListeners()
+    }
+
+    private fun setupListeners() = with(binding) {
+        btLogin.setOnClickListener {
+            navigateToLogin()
+        }
+
+        btSignUp.setOnClickListener {
+            if (validateInputs()) {
+                registerUser()
+            } else {
+                showToast(
+                    "Something Went Wrong. Please Try Again.",
+                    toastType = FancyToast.ERROR
+                )
             }
         }
+    }
+
+    private fun validateInputs(): Boolean = with(binding) {
+        val context = this@RegisterActivity
+        val username = etUsername.text.toString()
+        val password = etPassword.text.toString()
+        val rePassword = etRePassword.text.toString()
+
+        val isUsernameValid = ilUsername.checkUsername(context, username)
+        val isPasswordValid = ilPassword.checkPassword(context, password)
+        val isRePasswordValid = ilRePassword.checkRePassword(context, password, rePassword)
+
+        return isUsernameValid && isPasswordValid && isRePasswordValid
+    }
+
+    private fun registerUser() = with(binding) {
+        val username = etUsername.text.toString().trim()
+        val password = etPassword.text.toString().trim()
+
+        if (userDB.insertUser(username, password)) {
+            showToast("Your account has been successfully created.")
+            navigateToLogin()
+            finish()
+        } else {
+            showToast("Registration failed. Try again.", toastType = FancyToast.ERROR)
+        }
+    }
+
+    private fun navigateToLogin() {
+        startActivity(Intent(this@RegisterActivity, LoginActivity::class.java))
     }
 }

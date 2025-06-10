@@ -56,7 +56,8 @@
         app:boxStrokeColor="@color/md_theme_primary"
         android:textColorHint="@color/md_theme_secondary"
         app:passwordToggleEnabled="true"
-        android:layout_margin="24dp">
+        android:layout_margin="24dp"
+        app:errorIconDrawable="@null">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etPassword"

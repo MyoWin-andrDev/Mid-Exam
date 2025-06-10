@@ -1,6 +1,5 @@
 package com.talentProgramming.midExam.database
 
-import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
@@ -87,10 +86,10 @@ class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) 
         }
     }
 
-    fun getUserId(username: String) : Int {
+    fun getUserId(username: String, password : String) : Int {
         db = this.readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM $TBL_USER WHERE username = ?", arrayOf(username))
         var userId = 0
+        val cursor = db.rawQuery("SELECT * FROM $TBL_USER WHERE username = ? AND password = ?", arrayOf(username, password))
         if(cursor.moveToFirst()){
             while (!cursor.isAfterLast){
                 userId = cursor.getInt(cursor.getColumnIndexOrThrow("user_id"))
@@ -111,9 +110,28 @@ class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) 
         return exists
     }
 
-    fun checkPassword(username : String) : String{
+    fun verifyUserCredentials(username: String, password: String): Boolean {
         db = this.readableDatabase
-        val cursor = db.rawQuery("SELECT password FROM $TBL_USER WHERE username = ?", arrayOf(username))
+        val cursor = db.rawQuery(
+            "SELECT password FROM $TBL_USER WHERE username = ?",
+            arrayOf(username)
+        )
+        return try {
+            if (cursor.moveToFirst()) {
+                val storedPassword = cursor.getString(cursor.getColumnIndexOrThrow("password"))
+                password == storedPassword
+            } else {
+                false
+            }
+        } finally {
+            cursor.close()
+            db.close()
+        }
+    }
+
+    fun checkPassword(userId : Int) : String{
+        db = this.readableDatabase
+        val cursor = db.rawQuery("SELECT password FROM $TBL_USER WHERE user_id = ?", arrayOf(userId.toString()))
         var password : String = ""
         if(cursor.moveToFirst()){
             while(!cursor.isAfterLast){
@@ -145,12 +163,16 @@ class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) 
         }
     }
 
-    fun getUserUploadStatus(username : String) : List<StatusModel>{
+    fun getUserUploadStatus(userId: Int): List<StatusModel> {
         db = this.readableDatabase
         val statusList = arrayListOf<StatusModel>()
-        val cursor = db.rawQuery("SELECT * FROM $TBL_STATUS us JOIN $TBL_USER u ON us.user_id = u.user_id WHERE u.username = ?", arrayOf(username))
-        if(cursor.moveToFirst()){
-            while (!cursor.isAfterLast){
+        val cursor = db.rawQuery(
+            "SELECT * FROM $TBL_STATUS WHERE user_id = ? ORDER BY uploaded_at DESC",
+            arrayOf(userId.toString())
+        )
+
+        if (cursor.moveToFirst()) {
+            while (!cursor.isAfterLast) {
                 statusList.add(StatusModel(
                     cursor.getInt(cursor.getColumnIndexOrThrow("status_id")),
                     cursor.getInt(cursor.getColumnIndexOrThrow("user_id")),
@@ -164,6 +186,47 @@ class UserDB(context: Context) : SQLiteOpenHelper(context, "USER_DB",  null, 1) 
         cursor.close()
         db.close()
         return statusList
+    }
+
+    fun getStatusById(statusId: Int): String {
+        db = this.readableDatabase
+        val cursor = db.rawQuery(
+            "SELECT status FROM $TBL_STATUS WHERE status_id = ?",
+            arrayOf(statusId.toString())
+        )
+        return try {
+            if (cursor.moveToFirst()) {
+                cursor.getString(cursor.getColumnIndexOrThrow("status"))
+            } else ""
+        } finally {
+            cursor.close()
+            db.close()
+        }
+    }
+
+    fun getUserById(userId: Int): UserModel? {
+        readableDatabase.use { db ->
+            val query = """
+            SELECT user_id, username, password
+            FROM $TBL_USER 
+            WHERE user_id = ? 
+            LIMIT 1
+        """.trimIndent()
+
+            db.rawQuery(query, arrayOf(userId.toString())).use { cursor ->
+                if (cursor.moveToFirst()) {
+                     return UserModel(
+                        id = cursor.getInt(cursor.getColumnIndexOrThrow("user_id")),
+                        userName = cursor.getString(cursor.getColumnIndexOrThrow("username")),
+                        password = cursor.getString(cursor.getColumnIndexOrThrow("password")),
+                        userStatus = ""
+                    )
+                }
+                cursor.close()
+            }
+            db.close()
+        }
+        return null
     }
 
     fun deleteStatus(id : Int) : Boolean {

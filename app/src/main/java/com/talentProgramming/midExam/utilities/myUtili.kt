@@ -18,8 +18,13 @@ import com.talentProgramming.midExam.databinding.ActivityLoginBinding
 import com.talentProgramming.midExam.databinding.ActivityRegisterBinding
 import com.talentProgramming.midExam.databinding.DialogEditAccountBinding
 //Toast Function
-fun Context.showToast(value : String){
-    FancyToast.makeText(this, value ,FancyToast.LENGTH_LONG,FancyToast.SUCCESS,true).show()
+fun Context.showToast(
+    message : String,
+    @FancyToast.LayoutType toastType : Int = FancyToast.SUCCESS,
+    duration : Int = FancyToast.LENGTH_SHORT,
+    withIcon : Boolean = true
+){
+    FancyToast.makeText(this, message ,duration ,toastType ,withIcon).show()
 }
 
 //Dialog Function
@@ -52,7 +57,7 @@ fun Context.showAlertDialog(
 }
 
 @RequiresApi(Build.VERSION_CODES.P)
-fun Context.confirmPassword(username : String, onSaveClick : (()->Unit)){
+fun Context.confirmPassword(userId : Int, onSaveClick : (()->Unit)){
     val userDb = UserDB(this)
     val builder = AlertDialog.Builder(this)
     val binding = DialogEditAccountBinding.inflate(LayoutInflater.from(this))
@@ -63,11 +68,12 @@ fun Context.confirmPassword(username : String, onSaveClick : (()->Unit)){
             .create()
         dialog.show()
         btSave.setOnClickListener{
-            if(etPassword.text.toString() == userDb.checkPassword(username)){
+            val inputQuery = etPassword.text.toString()
+            if(inputQuery == userDb.checkPassword(userId)){
                 ilPassword.helperText = ""
                 onSaveClick()
             }
-            else if(etPassword.text.toString().isEmpty()){
+            else if(inputQuery.isEmpty()){
                 ilPassword.error = "Password must be filled."
             }
             else{
@@ -80,117 +86,99 @@ fun Context.confirmPassword(username : String, onSaveClick : (()->Unit)){
     }
 }
 
-fun customStringBuilder(errorList : List<String>) : StringBuilder{
-    val stringBuilder = StringBuilder()
-    errorList.forEach {
-        stringBuilder
-            .append("\u2022")//Bullet Point
-            .append(" ")
-            .append(it)
-            .append("\n")
-    }
-    return stringBuilder
-}
+fun customStringBuilder(errorList : List<String>) : StringBuilder =
+    StringBuilder(errorList.joinToString(""){"\u2022 $it \n"})
+
+
+
 //Username Text Input Validation Check
 @RequiresApi(Build.VERSION_CODES.P)
 fun TextInputLayout.checkUsername(context: Context,username : String, oldUsername : String? = null) : Boolean {
-    val USERNAME_VALID_PATTERN = Regex("^[A-Z](?=.*[0-9])[A-Za-z0-9._@]{5,19}\$")
     val userDb = UserDB(context)
-    var isUsernameChecked = false
-    this.apply {
-        if (username.isNotEmpty()) {
-            if (username.matches(USERNAME_VALID_PATTERN)) {
-                if (!userDb.checkUsernameExist(username)) {
-                    helperText = "Username is available."
-                    isUsernameChecked = true
-                }else if(oldUsername?.isNotEmpty() == true && username == oldUsername){
-                    helperText = "Username Unchanged"
-                    isUsernameChecked = true
-                }
-                else {
-                    error = customStringBuilder(listOf("Username is already taken."))
-                }
-            } else {
+        return when {
+            username.isBlank() -> {
+                error = customStringBuilder(listOf("Username must be filled."))
+                false
+            }
+            !username.matches(USERNAME_VALID_PATTERN) -> {
                 error = customStringBuilder(
                     listOf(
                         "Username must be start with capital letter.",
                         "Username must be contain a number(0 to 9)."
                     )
                 )
+                false
             }
-        } else {
-            error = customStringBuilder(
-                listOf("Username must be filled.")
-            )
+            oldUsername == username -> {
+                helperText = "Username Unchanged"
+                true
+            }
+            !userDb.checkUsernameExist(username) -> {
+                helperText = "Username is available."
+                true
+            }
+            else -> {
+                error = customStringBuilder(listOf("Username is already taken."))
+                false
+            }
         }
-    }
-    return isUsernameChecked
 }
 
 @RequiresApi(Build.VERSION_CODES.P)
 fun TextInputLayout.checkPassword(context : Context, password : String) : Boolean{
-    val PASSWORD_VALID_PATTERN = Regex("^[A-Z](?=.*[0-9])(?=.*[!@#\$%^&*._])[A-Za-z0-9!@#\$%^&*._]{4,18}\$")
     val userDb = UserDB(context)
-    var isPasswordChecked = false
-    if(password.isNotEmpty()){
-        if(password.matches(PASSWORD_VALID_PATTERN)){
-            if(password.length > 5){
-                helperText = "Strong Password"
-                isPasswordChecked = true
-            }
-        }else{
+     return when {
+        password.isBlank() -> {
+            error = customStringBuilder(listOf("Password must be filled."))
+            false
+        }
+        !password.matches(PASSWORD_VALID_PATTERN) -> {
             error = customStringBuilder(
                 listOf(
-                    "Password must be start with capital letter.",
+                    "Password must start with capital letter.",
                     "Password must be at least 6 characters.",
-                    "Password must be contained a number(0 to 9).",
-                    "Password must be contained a special character(!@#\$%^&*._).",
+                    "Password must contain a number (0 to 9).",
+                    "Password must contain a special character (!@#\$%^&*._)."
                 )
             )
+            false
+        }
+        else -> {
+            helperText = "Strong Password"
+            true
         }
     }
-    else{
-        error = customStringBuilder(
-            listOf("Password must be filled.")
-        )
-    }
-    return isPasswordChecked
 }
 
 @RequiresApi(Build.VERSION_CODES.P)
 fun TextInputLayout.checkRePassword(context: Context, password : String, rePassword : String) : Boolean {
-    val PASSWORD_VALID_PATTERN = Regex("^[A-Z](?=.*[0-9])(?=.*[!@#\$%^&*._])[A-Za-z0-9!@#\$%^&*._]{4,18}\$")
     val userDb = UserDB(context)
     var isRePasswordChecked = false
-    if(rePassword.isNotEmpty()){
-        if(rePassword.matches(PASSWORD_VALID_PATTERN)){
-            if(rePassword.length > 5){
-                helperText = "Strong Password"
-                if(password == rePassword){
-                    isRePasswordChecked = true
-                }
-                else{
-                    error = customStringBuilder(listOf("Password confirmation does not match."))
-                    error = customStringBuilder(listOf("Password confirmation does not match."))
-                }
-            }
-        }else{
+    return when{
+        rePassword.isBlank() -> {
+            error = customStringBuilder(listOf("Password must be filled."))
+            false
+        }
+        !rePassword.matches(PASSWORD_VALID_PATTERN) -> {
             error = customStringBuilder(
                 listOf(
-                    "Password must be start with capital letter.",
+                    "Password must start with capital letter.",
                     "Password must be at least 6 characters.",
-                    "Password must be contained a number(0 to 9).",
-                    "Password must be contained a special character(!@#\$%^&*._).",
+                    "Password must contain a number (0 to 9).",
+                    "Password must contain a special character (!@#\$%^&*._)."
                 )
             )
+            false
+        }
+        rePassword != password -> {
+            error = customStringBuilder(listOf("Password confirmation does not match."))
+            false
+        }
+        else -> {
+            helperText = "Strong Password"
+            true
         }
     }
-    else{
-        error = customStringBuilder(
-            listOf("Password must be filled.")
-        )
-    }
-    return isRePasswordChecked
 }
 
 

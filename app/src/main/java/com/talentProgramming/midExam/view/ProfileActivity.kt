@@ -3,72 +3,97 @@ package com.talentProgramming.midExam.view
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.SharedPreferences
-import android.os.Build
 import android.os.Bundle
-import android.view.LayoutInflater
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.talentProgramming.midExam.database.UserDB
 import com.talentProgramming.midExam.databinding.ActivityProfileBinding
-import com.talentProgramming.midExam.databinding.DialogEditAccountBinding
+import com.talentProgramming.midExam.model.UserModel
+import com.talentProgramming.midExam.utilities.KEY_USER_ID
+import com.talentProgramming.midExam.utilities.SHARED_PREF_NAME
 import com.talentProgramming.midExam.utilities.confirmPassword
 import com.talentProgramming.midExam.utilities.showAlertDialog
 import com.talentProgramming.midExam.utilities.showToast
 
 class ProfileActivity : AppCompatActivity() {
-    private lateinit var binding : ActivityProfileBinding
+    private lateinit var binding: ActivityProfileBinding
     private lateinit var sharedPreferences: SharedPreferences
-    private lateinit var userDb : UserDB
-    @SuppressLint("SetTextI18n")
-    @RequiresApi(Build.VERSION_CODES.P)
+    private lateinit var userDb: UserDB
+    private lateinit var password: String
+    private var userId : Int = -1
+    private var user : UserModel? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        initializeViews()
+        setupToolbar()
+        setupClickListeners()
+    }
+
+    private fun initializeViews() {
         binding = ActivityProfileBinding.inflate(layoutInflater)
-        sharedPreferences = getSharedPreferences("MY_PREF", MODE_PRIVATE)
-        val username = sharedPreferences.getString("usernameLoggedIn", null)
-        userDb = UserDB(this@ProfileActivity)
+        setContentView(binding.root)
+        sharedPreferences = getSharedPreferences(SHARED_PREF_NAME, MODE_PRIVATE)
+        userDb = UserDB(this)
+        userId = sharedPreferences.getInt(KEY_USER_ID, -1)
+        user = userDb.getUserById(userId)!!
+
+    }
+
+    private fun setupToolbar() {
+        binding.tbProfile.apply {
+            setSupportActionBar(this)
+            setNavigationOnClickListener { finish() }
+        }
+    }
+
+    private fun setupClickListeners() {
         binding.apply {
-            setContentView(root)
-            setSupportActionBar(tbProfile)
-            tbProfile.setNavigationOnClickListener { finish() }
+            btEditUsername.setOnClickListener { navigateToEditUsername() }
+            btEditPassword.setOnClickListener { navigateToEditPassword() }
+            btDeleteAccount.setOnClickListener { showDeleteAccountConfirmation() }
+        }
+    }
 
-            btEditUsername.setOnClickListener {
-                Intent(this@ProfileActivity, EditUsername::class.java).apply {
-                    startActivity(this)
-                }
-            }
+    private fun navigateToEditUsername() {
+        startActivity(Intent(this, EditUsername::class.java))
+    }
 
-            btEditPassword.setOnClickListener {
-                Intent(this@ProfileActivity, EditPassword::class.java).apply {
-                    startActivity(this)
-                }
-            }
+    private fun navigateToEditPassword() {
+        startActivity(Intent(this, EditPassword::class.java))
+    }
 
-            btDeleteAccount.setOnClickListener {
-                showAlertDialog(
-                    "Delete Account ?",
-                    "Are you sure to delete account ?",
-                    "Delete",
-                    "Cancel",
-                    null,
-                    onPositiveClick = {
-                        confirmPassword(username!!,
-                            onSaveClick = {
-                                if(userDb.deleteUser(userDb.getUserId(username))){
-                                    showToast("Account Deleted Successfully")
-                                    Intent(this@ProfileActivity, LoginActivity::class.java).apply {
-                                        startActivity(this)
-                                        finish()
-                                    }
-                                }
-                                else{
-                                    showToast("Something Went Wrong")
-                                }
-                            }
-                        )
-                    }
+    private fun showDeleteAccountConfirmation() {
+        if (user!!.userName.isEmpty()) {
+            showToast("User not found")
+            return
+        }
+
+        showAlertDialog(
+            title = "Delete Account?",
+            message = "Are you sure you want to delete your account?",
+            positiveButtonText = "Delete",
+            negativeButtonText = "Cancel",
+            onPositiveClick = {
+                confirmPassword(userId,
+                    onSaveClick = ::deleteUserAccount,
                 )
             }
+        )
+    }
+
+    private fun deleteUserAccount() {
+        when {
+            userId == -1 -> showToast("User not found")
+            userDb.deleteUser(userId) -> {
+                showToast("Account deleted successfully")
+                navigateToLogin()
+            }
+            else -> showToast("Something went wrong")
         }
+    }
+
+    private fun navigateToLogin() {
+        startActivity(Intent(this@ProfileActivity, LoginActivity::class.java))
+        finish()
     }
 }
